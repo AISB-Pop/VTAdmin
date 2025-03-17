@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+    th { background-color: #f4f4f4; }
+    .actions button { margin-right: 5px; }
+    .form-container { margin-bottom: 20px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Super Admin Dashboard</h1>
+
+  <div id="loginContainer">
+    <h2>Login</h2>
+    <input type="text" id="loginUsername" placeholder="Username" required>
+    <input type="password" id="loginPassword" placeholder="Password" required>
+    <button onclick="login()">Login</button>
+    <div id="loginMessage" class="error"></div>
+  </div>
+
+  <div id="dashboardContainer" class="hidden">
+    <div class="form-container">
+      <h2>Create New Admin</h2>
+      <input type="text" id="newUsername" placeholder="Username" required>
+      <input type="email" id="newEmail" placeholder="Email" required>
+      <input type="password" id="newPassword" placeholder="Password" required>
+      <button onclick="createAdmin()">Create Admin</button>
+    </div>
+
+    <h2>Admin Accounts</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="adminTable"></tbody>
+    </table>
+  </div>
+
+  <script>
+    let authToken = localStorage.getItem('authToken');
+    let userRole = localStorage.getItem('userRole');
+
+    async function login() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      if (!username || !password) {
+        document.getElementById('loginMessage').textContent = 'Please enter both username and password';
+        return;
+      }
+      try {
+        const response = await fetch('http://localhost:3000/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Login failed');
+        authToken = data.token;
+        userRole = data.role;
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('userRole', userRole);
+        document.getElementById('loginContainer').classList.add('hidden');
+        document.getElementById('dashboardContainer').classList.remove('hidden');
+        fetchAdmins();
+      } catch (error) {
+        document.getElementById('loginMessage').textContent = error.message;
+      }
+    }
+
+    async function fetchAdmins() {
+      if (!authToken) return;
+      try {
+        const response = await fetch('http://localhost:3000/api/superadmin/admins', {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (!response.ok) {
+          if (response.status === 403) throw new Error('Forbidden: Check your role or token');
+          throw new Error('Failed to fetch admins');
+        }
+        const admins = await response.json();
+        const tbody = document.getElementById('adminTable');
+        tbody.innerHTML = '';
+        admins.forEach(admin => {
+          const created = new Date(admin.created_at).toLocaleString();
+          tbody.innerHTML += `
+            <tr>
+              <td>${admin.id}</td>
+              <td>${admin.username}</td>
+              <td>${admin.email}</td>
+              <td>${admin.role}</td>
+              <td>${created}</td>
+              <td class="actions">
+                <button onclick="viewFullDetails(${admin.id})">View Details</button>
+                <button onclick="deleteAdmin(${admin.id})" ${admin.role === 'super_admin' ? 'disabled' : ''}>Delete</button>
+              </td>
+            </tr>
+          `;
+        });
+      } catch (error) {
+        console.error('Fetch error:', error);
+        alert(error.message);
+      }
+    }
+
+    async function createAdmin() {
+      if (!authToken) return;
+      const username = document.getElementById('newUsername').value.trim();
+      const email = document.getElementById('newEmail').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
+      if (!username || !email || !password) {
+        alert('Please fill in all fields');
+        return;
+      }
+      try {
+        const response = await fetch('http://localhost:3000/api/superadmin/admins', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ username, email, password })
+        });
+        if (response.ok) {
+          alert('Admin created successfully!');
+          fetchAdmins();
+          document.getElementById('newUsername').value = '';
+          document.getElementById('newEmail').value = '';
+          document.getElementById('newPassword').value = '';
+        } else {
+          const error = await response.json();
+          alert('Error: ' + error.error);
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      }
+    }
+
+    // Load admins on page load if authenticated
+    window.onload = () => {
+      if (authToken) {
+        document.getElementById('dashboardContainer').classList.remove('hidden');
+        document.getElementById('loginContainer').classList.add('hidden');
+        fetchAdmins();
+      }
+    };
+
+    // Include other functions (viewFullDetails, deleteAdmin) from your original super.js
+  </script>
+</body>
+</html>

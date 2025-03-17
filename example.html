@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shirt Customizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .customizer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            width: 320px;
+        }
+        .preview-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            overflow: hidden;
+        }
+        .preview {
+            width: 300px;
+            height: 300px;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            background-size: cover;
+            transition: transform 0.5s ease-in-out;
+        }
+        .sticker {
+            position: absolute;
+            cursor: grab;
+            user-select: none;
+        }
+        .sticker.selected {
+            border: 2px dashed black;
+        }
+        .resize-handle {
+            width: 15px;
+            height: 15px;
+            background-color: black;
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            cursor: nwse-resize;
+            display: none;
+        }
+        .delete-button {
+            width: 15px;
+            height: 15px;
+            background-color: red;
+            color: white;
+            font-size: 12px;
+            text-align: center;
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            cursor: pointer;
+            display: none;
+        }
+        .sticker.selected .resize-handle, 
+        .sticker.selected .delete-button {
+            display: block;
+        }
+        .stickers-container {
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        .sticker-option {
+            width: 80px;
+            height: 80px;
+            margin: 10px;
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+        .switch-arrow {
+            cursor: pointer;
+            font-size: 24px;
+            position: absolute;
+            top: 50%;
+            right: -40px;
+            transform: translateY(-50%);
+            z-index: 20;
+        }
+
+        /* New arrow on the right beside merch */
+        .switch-arrow-right {
+            cursor: pointer;
+            font-size: 24px;
+            position: absolute;
+            top: 50%;
+            left: -40px; /* Position it beside the merch */
+            transform: translateY(-50%);
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customize Your Shirt</h1>
+    <div class="customizer">
+        <div class="preview-container" id="previewContainer">
+            <div class="preview" id="front" style="background-image: url('shirt-front.png'); z-index: 2;"></div>
+            <div class="preview" id="back" style="background-image: url('shirt-back.png'); z-index: 1; transform: translateX(100%);"></div>
+        </div>
+        <div class="switch-arrow" onclick="switchShirtView()">&#x27A1;</div>
+        <div class="switch-arrow-right" onclick="switchShirtView()">&#x2B05;</div> <!-- New arrow beside merch -->
+        <div class="stickers-container">
+            <img src="sticker1.png" class="sticker-option" onclick="addSticker('sticker1.png')">
+            <img src="sticker2.png" class="sticker-option" onclick="addSticker('sticker2.png')">
+            <img src="sticker3.png" class="sticker-option" onclick="addSticker('sticker3.png')">
+            <img src="sticker4.png" class="sticker-option" onclick="addSticker('sticker4.png')">
+            <img src="sticker5.png" class="sticker-option" onclick="addSticker('sticker5.png')">
+        </div>
+    </div>
+
+    <script>
+        let isFrontView = true;
+
+        function switchShirtView() {
+            const front = document.getElementById("front");
+            const back = document.getElementById("back");
+
+            if (isFrontView) {
+                front.style.transform = "translateX(-100%)";
+                back.style.transform = "translateX(0)";
+            } else {
+                front.style.transform = "translateX(0)";
+                back.style.transform = "translateX(100%)";
+            }
+
+            isFrontView = !isFrontView;
+        }
+
+        function addSticker(stickerSrc) {
+            const sticker = document.createElement("div");
+            sticker.classList.add("sticker");
+            sticker.style.left = "110px";
+            sticker.style.top = "110px";
+            sticker.style.width = "80px";
+            sticker.style.height = "80px";
+            sticker.style.backgroundImage = `url(${stickerSrc})`;
+            sticker.style.backgroundSize = "cover";
+
+            const resizeHandle = document.createElement("div");
+            resizeHandle.classList.add("resize-handle");
+            sticker.appendChild(resizeHandle);
+
+            const deleteButton = document.createElement("div");
+            deleteButton.classList.add("delete-button");
+            deleteButton.innerText = "X";
+            deleteButton.onclick = () => sticker.remove();
+            sticker.appendChild(deleteButton);
+
+            sticker.onclick = function (event) {
+                event.stopPropagation();
+                document.querySelectorAll(".sticker").forEach(el => el.classList.remove("selected"));
+                sticker.classList.add("selected");
+            };
+
+            resizeHandle.onmousedown = function (event) {
+                event.stopPropagation();
+                function resizeMove(e) {
+                    sticker.style.width = `${e.clientX - sticker.offsetLeft}px`;
+                    sticker.style.height = `${e.clientX - sticker.offsetLeft}px`;
+                }
+                function stopResize() {
+                    document.removeEventListener("mousemove", resizeMove);
+                    document.removeEventListener("mouseup", stopResize);
+                }
+                document.addEventListener("mousemove", resizeMove);
+                document.addEventListener("mouseup", stopResize);
+            };
+
+            sticker.onmousedown = function (event) {
+                event.preventDefault();
+                let shiftX = event.clientX - sticker.getBoundingClientRect().left;
+                let shiftY = event.clientY - sticker.getBoundingClientRect().top;
+
+                function moveSticker(e) {
+                    let newX = e.clientX - shiftX;
+                    let newY = e.clientY - shiftY;
+                    
+                    let containerRect = document.getElementById("previewContainer").getBoundingClientRect();
+                    
+                    if (newX < 0) newX = 0;
+                    if (newY < 0) newY = 0;
+                    if (newX + sticker.offsetWidth > containerRect.width) newX = containerRect.width - sticker.offsetWidth;
+                    if (newY + sticker.offsetHeight > containerRect.height) newY = containerRect.height - sticker.offsetHeight;
+                    
+                    sticker.style.left = newX + "px";
+                    sticker.style.top = newY + "px";
+                }
+
+                function stopMoving() {
+                    document.removeEventListener("mousemove", moveSticker);
+                    document.removeEventListener("mouseup", stopMoving);
+                }
+
+                document.addEventListener("mousemove", moveSticker);
+                document.addEventListener("mouseup", stopMoving);
+            };
+
+            const preview = isFrontView ? document.getElementById("front") : document.getElementById("back");
+            preview.appendChild(sticker);
+        }
+
+        document.addEventListener("click", function(event) {
+            const previewContainer = document.getElementById("previewContainer");
+            if (!previewContainer.contains(event.target)) {
+                document.querySelectorAll(".sticker").forEach(el => el.classList.remove("selected"));
+            }
+        });
+    </script>
+</body>
+</html>

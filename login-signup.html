@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEUR Authorization</title>
+    <link rel="stylesheet" href="lsf.css">
+    <!-- Update EmailJS SDK to the latest version -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            emailjs.init({
+                publicKey: "Db-Ko0z3fyQvrvgSt"
+            });
+        })();
+    </script>
+    <style>
+        /* Container to hold buttons side by side */
+        .button-container {
+            display: flex;
+            justify-content: space-between; /* Ensures space is distributed between the buttons */
+            gap: 10px; /* Optional: adds a gap between buttons */
+            margin-top: 10px;
+        }
+
+        /* Style for Check Email button */
+        .check-email-btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            width: 48%; /* Button width adjusted to allow them to sit side by side */
+        }
+
+        /* Style for Confirm Email button */
+        .confirm-email-btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            width: 48%; /* Button width adjusted to allow them to sit side by side */
+        }
+
+        /* Disable the Confirm Email button */
+        .confirm-email-btn:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="homepage.html">
+        <img src="pictures/feu_logo-login.png" alt="FEUR Logo" class="logo">
+    </a>
+    <div class="container">
+        <!-- Login Form -->
+        <div class="form-container show" id="login-form">
+            <h2>Login</h2>
+            <form id="login-form-element" action="javascript:void(0);" method="get">
+                <input type="text" id="login-email" placeholder="Email" required>
+                <div class="password-container">
+                    <input type="password" id="login-password" placeholder="Password" required>
+                    <span class="eye-icon" onclick="togglePasswordVisibility('login-password')">👁️</span>
+                </div>
+                <button type="submit" onclick="handleLoginSubmit()">Login</button>
+            </form>
+            <div class="link">
+                <a href="javascript:void(0);" onclick="toggleForm('forgot-password-form')">Forgot Password?</a> | 
+                <a href="javascript:void(0);" onclick="toggleForm('signup-form')">Create an Account</a>
+            </div>
+        </div>
+
+        <!-- Sign Up Form -->
+        <div class="form-container" id="signup-form">
+            <h2>Sign Up</h2>
+
+            <!-- Account Type Selection -->
+            <div class="radio-container">
+                <input type="radio" id="personal" name="account-type" value="personal" class="radio-input" onclick="showPersonalForm()" checked>
+                <label for="personal" class="radio-label">Outsider</label>
+                <input type="radio" id="student" name="account-type" value="student" class="radio-input" onclick="showStudentForm()">
+                <label for="student" class="radio-label">Insider</label>
+            </div>
+
+            <!-- Form Fields for Personal (Outsider) -->
+            <div id="personal-form" style="display: block;">
+                <form id="personal-signup-form" onsubmit="handleSignupSubmit('personal', event)">
+                    <!-- Email Input -->
+                    <div class="form-group">
+                        <label for="signup-email-personal">Email</label>
+                        <input type="email" id="signup-email-personal" name="email" placeholder="ex. ********@gmail.com" required>
+                        <div class="button-container">
+                            <button type="button" id="check-email-btn-personal" class="check-email-btn" onclick="checkEmail('personal')">Check Email</button>
+                            <button type="button" id="confirm-email-btn-personal" class="confirm-email-btn" onclick="sendEmailConfirmation('personal')" disabled>Confirm Email</button>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation Code Container for Personal (Outsider) -->
+                    <div id="confirm-code-container-personal" style="display: none;">
+                        <label for="confirm-code">Enter Confirmation Code</label>
+                        <input type="text" id="confirm-code-personal" placeholder="Enter confirmation code" required>
+                        <!-- Separate confirm code button for Personal -->
+                        <button type="button" id="confirm-code-btn-personal" onclick="verifyConfirmCodePersonal()">Confirm Code</button>
+                    </div>
+
+                    <!-- Personal Fields -->
+                    <div id="personal-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="signup-password-personal">Password</label>
+                            <input type="password" id="signup-password-personal" name="password" placeholder="Password" required>
+                            <span class="eye-icon" onclick="togglePasswordVisibility('signup-password-personal')">👁️</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signup-contact-personal">Contact Number</label>
+                            <input type="tel" id="signup-contact-personal" name="contact_number" placeholder="Contact Number" required pattern="[0-9]{11}" title="Please enter a valid 11-digit contact number">
+                        </div>
+
+                        <div class="checkbox-container">
+                            <label>
+                                <input type="checkbox" id="agree-checkbox-personal" name="agree" required>
+                                I agree to the <a href="/data-privacy" target="_blank">FEUR Data Privacy</a> |
+                                <a href="/terms-conditions" target="_blank">Terms and Conditions</a>
+                            </label>
+                        </div>
+
+                        <button type="submit">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Form Fields for Student (Insider) -->
+            <div id="student-form" style="display: none;">
+                <form id="student-signup-form" onsubmit="handleSignupSubmit('student', event)">
+                    <!-- Email Input -->
+                    <div class="form-group">
+                        <label for="signup-email-student">Email</label>
+                        <input type="email" id="signup-email-student" name="email" placeholder="ex. ***********@feuroosevelt.edu.ph" required>
+                        <div class="button-container">
+                            <button type="button" id="check-email-btn-student" class="check-email-btn" onclick="checkEmail('student')">Check Email</button>
+                            <button type="button" id="confirm-email-btn-student" class="confirm-email-btn" onclick="sendEmailConfirmation('student')" disabled>Confirm Email</button>
+                        </div>
+                    </div>
+
+                    <!-- Confirmation Code Container for Student (Insider) -->
+                    <div id="confirm-code-container-student" style="display: none;">
+                        <label for="confirm-code">Enter Confirmation Code</label>
+                        <input type="text" id="confirm-code-student" placeholder="Enter confirmation code" required>
+                        <!-- Separate confirm code button for Student -->
+                        <button type="button" id="confirm-code-btn-student" onclick="verifyConfirmCodeStudent()">Confirm Code</button>
+                    </div>
+
+                    <!-- Student Fields -->
+                    <div id="student-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="signup-password-student">Password</label>
+                            <input type="password" id="signup-password-student" name="password" placeholder="Password" required>
+                            <span class="eye-icon" onclick="togglePasswordVisibility('signup-password-student')">👁️</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signup-birthday">Birthday</label>
+                            <input type="date" id="signup-birthday" name="birthday" placeholder="Birthday" required onchange="calculateAge()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signup-age">Age</label>
+                            <input type="number" id="signup-age" name="age" placeholder="Age" required min="1" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="gender">Gender</label>
+                            <select id="gender" name="gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signup-contact-student">Contact Number</label>
+                            <input type="tel" id="signup-contact-student" name="contact_number" placeholder="Contact Number" required pattern="[0-9]{11}" title="Please enter a valid 11-digit contact number">
+                        </div>
+
+                        <div class="checkbox-container">
+                            <label>
+                                <input type="checkbox" id="agree-checkbox-student" name="agree" required>
+                                I agree to the <a href="/data-privacy" target="_blank">FEUR Data Privacy</a> |
+                                <a href="/terms-conditions" target="_blank">Terms and Conditions</a>
+                            </label>
+                        </div>
+
+                        <button type="submit">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="link">
+                <a href="" onclick="toggleForm('login-form')">Already have an account? Login</a>
+            </div>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div class="form-container" id="forgot-password-form">
+            <h2>Forgot Password</h2>
+
+            <!-- Personal / Student Radio Buttons for Forgot Password -->
+            <div class="radio-container">
+                <input type="radio" id="forgot-personal" name="forgot-account-type" class="radio-input" onclick="clearForgotPasswordFields(); toggleForgotPasswordType('personal')" checked>
+                <label for="forgot-personal" class="radio-label">Outsider</label>
+                <input type="radio" id="forgot-student" name="forgot-account-type" class="radio-input" onclick="clearForgotPasswordFields(); toggleForgotPasswordType('student')">
+                <label for="forgot-student" class="radio-label">Insider</label>
+            </div>
+
+            <!-- Forgot Password Fields -->
+            <form action="#" onsubmit="showLoginForm(event)">
+                <input type="email" id="forgot-email" placeholder="Enter your email" required>
+                <button type="button" id="send-reset-code" onclick="sendResetCode()">Send Reset Code</button>
+                <!-- Below the Send Reset Code button, add this for the timer -->
+                <div id="reset-code-timer" style="display:none; color: red; margin-top: 10px;">
+                    Send another code in: <span id="timer"></span> seconds.
+                </div>
+            </form>
+
+            <div id="reset-code-container" style="display: none;">
+                <input type="text" id="reset-code" placeholder="Enter reset code" required maxlength="6" pattern="\d{6}" title="Reset code must be exactly 6 digits">
+                <button type="button" onclick="verifyResetCode()">Verify Reset Code</button>
+            </div>
+
+            <div id="new-password-container" style="display: none;">
+                <div class="password-container">
+                    <input type="password" id="new-password" placeholder="Enter new password" required>
+                    <span class="eye-icon" onclick="togglePasswordVisibility('new-password')">👁️</span>
+                </div>
+                <div class="password-container">
+                    <input type="password" id="confirm-password" placeholder="Confirm new password" required>
+                    <span class="eye-icon" onclick="togglePasswordVisibility('confirm-password')">👁️</span>
+                </div>
+                <button type="button" onclick="resetPassword()">Reset Password</button>
+            </div>
+
+            <div class="link">
+                <a href="#" onclick="toggleForm('login-form')">Back to Login</a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Add your login-signup.js file after EmailJS -->
+    <script src="login-signup.js"></script>
+</body>
+</html>
