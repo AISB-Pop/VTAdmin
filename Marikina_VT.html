@@ -4,25 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FEU Roosevelt</title>
-  <link rel="stylesheet" href="styles.css"> <!-- Link to the CSS file -->
-  <!-- Font Awesome CDN for icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+  <link rel="stylesheet" href="VT_styles.css"> <!-- External CSS for VT design -->
+  <link rel="stylesheet" href="style.css"> <!-- External CSS for html design -->
 </head>
 <body>
 
-  <!-- First Header (Just a div) -->
+  <!-- Header Section -->
   <div class="header1">
     <div class="logo">
-      <a href="homepage.html"><img src="rooosevelt-logo1.png" alt="Logo"></a> <!-- Replace 'logo.png' with your actual logo image -->
+      <a href="homepage.html"><img src="rooosevelt-logo1.png" alt="Logo"></a>
     </div>
     <div class="icons">
-      <i class="fa-solid fa-magnifying-glass"></i> <!-- Search Icon -->
-      <i class="fa-brands fa-facebook-f"></i> <!-- Facebook Icon -->
-      <i class="fa-brands fa-twitter"></i> <!-- Close (X) Icon -->
-      <i class="fa-solid fa-phone"></i> <!-- Contact Info Icon -->
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <i class="fa-brands fa-facebook-f"></i>
+      <i class="fa-brands fa-twitter"></i>
+      <i class="fa-solid fa-phone"></i>
     </div>
   </div>
-    <header>
+  
+  <header>
     <nav>
       <ul>
         <li><a href="homepage.html">Home</a></li>
@@ -41,7 +43,7 @@
           </div>
         </li>
         <li class="dropdown">
-          <a href="#" >Academic Projects <span style="font-size: 10px; opacity: 0.5;">▼</span></a>
+          <a href="#">Academic Projects <span style="font-size: 10px; opacity: 0.5;">▼</span></a>
           <div class="dropdown-content">
             <a href="Capstone.html">Capstone</a>
             <a href="Researches.html">Researches</a>
@@ -64,27 +66,51 @@
       </ul>
     </nav>
   </header>
-  
 
-         <div class = "VT">
-         </div> 
-        
-    <div class ="frame">
-   
-      <a href="#" class="btn">
-   <i class="fas fa-backward"></i>
-  </a>
-      <a href="#" class="btn">
-  <i class="fas fa-play"></i>
-  </a>
-      <a href="#" class="btn">
-   <i class="fas fa-forward"></i>
-  </a>
-    
-  </div>
+  <div class="VT">
+    <!-- 360 Image Viewer -->
+    <div id="panorama" style="width: 100%; height: 750px;"></div>
+    <div class="image-gallery" style="position: bottom; align-items: center; width: 60%; height: 150px;">
+      <button class="gallery-btn left-btn" onclick="scrollGallery('left')">❮</button>
+      <div class="images-container">
+        <div class="image-wrapper">
+          <img src="m_ground_lobby.jpg" alt="Ground Lobby" class="gallery-image gold-border" onclick="changeImage(this)">
+          <span class="image-text" onclick="changeImage(this.previousElementSibling)">Ground Lobby</span>
+        </div>
+        <div class="image-wrapper">
+          <img src="m_guidance.jpg" alt="Guidance" class="gallery-image" onclick="changeImage(this)">
+          <span class="image-text" onclick="changeImage(this.previousElementSibling)">Guidance Room</span>
+        </div>
+        <div class="image-wrapper">
+          <img src="m_clinic.jpg" alt="Clinic" class="gallery-image" onclick="changeImage(this)">
+          <span class="image-text" onclick="changeImage(this.previousElementSibling)">Clinic Room</span>
+        </div>
+        <div class="image-wrapper">
+          <img src="m_quadrangle.jpg" alt="Quadrangle" class="gallery-image" onclick="changeImage(this)">
+          <span class="image-text" onclick="changeImage(this.previousElementSibling)">Quadrangle</span>
+        </div>
+        <div class="image-wrapper">
+          <img src="m_drawingroom.jpg" alt="Drawing Room" class="gallery-image" onclick="changeImage(this)">
+          <span class="image-text" onclick="changeImage(this.previousElementSibling)">Drawing Room</span>
+        </div>
+        <div class="image-wrapper">
+          <img src="m_physicslab.jpg" alt="Physics Lab" class="gallery-image" onclick="changeImage(this)">
+          <span class="image-text" onclick="changeImage(this.previousElementSibling)">Physics Laboratory</span>
+        </div>
+        <div class="image-wrapper">
+          <img src="m_classroom.jpg" alt="Classroom" class="gallery-image" onclick="changeImage(this)">
+          <span class="image-text" onclick="changeImage(this.previousElementSibling)">Classroom</span>
+        </div>
+        <div class="image-wrapper">
+          <img src="m_boardroom.jpg" alt="Board Room" class="gallery-image" onclick="changeImage(this)">
+          <span class="image-text" onclick="changeImage(this.previousElementSibling)">Board Room</span>
+        </div>
+      </div>      
+      <button class="gallery-btn right-btn" onclick="scrollGallery('right')">❯</button>
+    </div>
+  </div>   
   
-     <!---FOOTER-->
-
+  <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-container">
         <div class="footer-columns">
@@ -105,11 +131,15 @@
             <img src="QR_fb.png" alt="FEU Logo">
         </div>
     </div>
-
+  
     <div class="footer-bottom">
         <p>Copyright © 2025. All Rights Reserved, INNOV8</p>
     </div>
-</footer>
+  </footer>
+
   <!-- END OF FOOTER -->
+
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+  <script src="vt_marikina.js"></script>
 </body>
 </html>
