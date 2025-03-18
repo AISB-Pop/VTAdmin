@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+      min-height: 100vh;
+    }
+    /* Sidebar Menu */
+    .sidebar {
+      width: 250px;
+      background-color: #2c3e50;
+      color: white;
+      padding: 20px;
+      position: fixed;
+      height: 100%;
+      overflow-y: auto;
+    }
+    .sidebar h2 {
+      font-size: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .sidebar ul {
+      list-style: none;
+    }
+    .sidebar ul li {
+      margin-bottom: 10px;
+    }
+    .sidebar ul li a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+      border-radius: 4px;
+      transition: background 0.3s;
+    }
+    .sidebar ul li a:hover {
+      background-color: #34495e;
+    }
+    .sidebar ul li ul {
+      margin-left: 15px;
+      display: none;
+    }
+    .sidebar ul li:hover > ul {
+      display: block;
+    }
+    /* Top Navigation Bar */
+    .top-nav {
+      background-color: #ffffff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 250px;
+      right: 0;
+      z-index: 1000;
+    }
+    .top-nav .search-bar {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      width: 300px;
+    }
+    .top-nav .notifications {
+      position: relative;
+      margin-right: 20px;
+    }
+    .top-nav .notifications .badge {
+      background-color: #ff4444;
+      color: white;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 12px;
+      position: absolute;
+      top: -5px;
+      right: -5px;
+    }
+    .top-nav .profile {
+      position: relative;
+    }
+    .top-nav .profile img {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .profile-dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 50px;
+      background-color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+      padding: 10px;
+      min-width: 200px;
+      z-index: 1001;
+    }
+    .profile-dropdown.active {
+      display: block;
+    }
+    .profile-dropdown .profile-pic-upload {
+      margin-bottom: 10px;
+    }
+    .profile-dropdown .profile-pic-upload input {
+      margin-top: 5px;
+    }
+    .profile-dropdown .account-settings {
+      padding: 10px 0;
+    }
+    .profile-dropdown .account-settings p {
+      margin: 5px 0;
+      color: #333;
+    }
+    .profile-dropdown .account-settings button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #4a90e2;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    /* Main Content */
+    .main-content {
+      margin-left: 250px;
+      margin-top: 60px;
+      padding: 20px;
+      flex: 1;
+    }
+    .dashboard-container {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    .dashboard-container h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    /* Analytics Section */
+    .analytics, .quick-actions, .recent-activity, .feedback-summary {
+      margin-bottom: 30px;
+    }
+    .analytics .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .card h3 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .card p {
+      color: #666;
+    }
+    /* Quick Actions */
+    .quick-actions .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .quick-actions button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #4a90e2;
+      color: white;
+      transition: background 0.3s;
+    }
+    .quick-actions button:hover {
+      background-color: #357abd;
+    }
+    /* Recent Activity */
+    .recent-activity ul {
+      list-style: none;
+    }
+    .recent-activity ul li {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    /* Feedback Summary */
+    .feedback-summary table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .feedback-summary th, .feedback-summary td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    .feedback-summary th {
+      background-color: #4a90e2;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar Menu -->
+  <div class="sidebar">
+    <h2>Admin Panel</h2>
+    <ul>
+      <li><a href="#dashboard">Dashboard</a></li>
+      <li>
+        <a href="#virtual-tour">Virtual Tour Management</a>
+        <ul>
+          <li><a href="#add-tour">Add/Edit Virtual Tour Locations</a></li>
+          <li><a href="#manage-360">Manage 360° Views</a></li>
+          <li><a href="#upload-images">Upload/Replace Images</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#user-management">User Management</a>
+        <ul>
+          <li><a href="#view-users">View Users</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#content-management">Content Management</a>
+        <ul>
+          <li><a href="#announcements">Announcements</a></li>
+          <li><a href="#news-updates">News and Updates</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#feedback-support">Feedback & Support</a>
+        <ul>
+          <li><a href="#user-queries">User Queries</a></li>
+          <li><a href="#feedback-reports">Feedback Reports</a></li>
+        </ul>
+      </li>
+      <li>
+        <a href="#settings">Settings</a>
+        <ul>
+          <li><a href="#website-config">Website Configuration</a></li>
+          <li><a href="#contact-info">Contact Information</a></li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Top Navigation Bar -->
+  <div class="top-nav">
+    <input type="text" class="search-bar" placeholder="Search...">
+    <div class="notifications">
+      <span>🔔</span>
+      <span class="badge">3</span>
+    </div>
+    <div class="profile" onclick="toggleProfileDropdown()">
+      <img src="https://via.placeholder.com/35" alt="Admin Profile" id="profile-pic">
+      <div class="profile-dropdown" id="profile-dropdown">
+        <div class="profile-pic-upload">
+          <label for="profile-upload">Upload Profile Picture:</label>
+          <input type="file" id="profile-upload" accept="image/*" onchange="uploadProfilePic(event)">
+        </div>
+        <div class="account-settings">
+          <h3>Account Settings</h3>
+          <p><strong>Username:</strong> admin123</p>
+          <p><strong>Email:</strong> admin@example.com</p>
+          <p><strong>Role:</strong> Super Admin</p>
+          <p><strong>Last Login:</strong> 2025-03-10 09:00 AM</p>
+          <p><strong>Account Created:</strong> 2024-01-15</p>
+          <button onclick="saveSettings()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="dashboard-container">
+      <h1>Dashboard</h1>
+
+      <!-- Website Analytics -->
+      <div class="analytics">
+        <h2>Website Analytics</h2>
+        <div class="stats">
+          <div class="card">
+            <h3>Visitor Count</h3>
+            <p>1,245</p>
+          </div>
+          <div class="card">
+            <h3>Popular Page</h3>
+            <p>Virtual Tour</p>
+          </div>
+          <div class="card">
+            <h3>Bounce Rate</h3>
+            <p>32%</p>
+          </div>
+          <div class="card">
+            <h3>Avg. Session Time</h3>
+            <p>5m 23s</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="action-buttons">
+          <button onclick="addNewTour()">Add New Tour</button>
+          <button onclick="updateContent()">Update Content</button>
+        </div>
+      </div>
+
+      <!-- Recent Activity Logs -->
+      <div class="recent-activity">
+        <h2>Recent Activity Logs</h2>
+        <ul>
+          <li>Admin added new tour location at 10:30 AM</li>
+          <li>User feedback received at 9:15 AM</li>
+          <li>News updated at 8:45 AM</li>
+        </ul>
+      </div>
+
+      <!-- Feedback Summary -->
+      <div class="feedback-summary">
+        <h2>Feedback Summary</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Feedback</th>
+              <th>Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>John Doe</td>
+              <td>Great virtual tour!</td>
+              <td>2025-03-09</td>
+              <td>Resolved</td>
+            </tr>
+            <tr>
+              <td>Jane Smith</td>
+              <td>Images not loading</td>
+              <td>2025-03-08</td>
+              <td>Pending</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let profilePic = document.getElementById('profile-pic');
+    let profileDropdown = document.getElementById('profile-dropdown');
+
+    // Toggle Profile Dropdown
+    function toggleProfileDropdown() {
+      profileDropdown.classList.toggle('active');
+    }
+
+    // Handle Profile Picture Upload
+    function uploadProfilePic(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          profilePic.src = e.target.result;
+          // Here you would typically send the image to a server
+          alert('Profile picture uploaded! (Server integration needed for saving)');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Save Account Settings (Placeholder)
+    function saveSettings() {
+      alert('Account settings saved! (Server integration needed for persistence)');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.profile')) {
+        profileDropdown.classList.remove('active');
+      }
+    });
+
+    function addNewTour() {
+      alert("Add New Tour functionality coming soon!");
+    }
+    function updateContent() {
+      alert("Update Content functionality coming soon!");
+    }
+  </script>
+</body>
+</html>

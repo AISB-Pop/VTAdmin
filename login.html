@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Museum Admin Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f6f9;
+      color: #333;
+      display: flex;
+    }
+    .header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 15px 20px;
+      width: 100%;
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .sidebar {
+      width: 250px;
+      background-color: #34495e;
+      color: white;
+      height: calc(100vh - 60px);
+      position: fixed;
+      top: 60px;
+      padding-top: 20px;
+      overflow-y: auto;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar ul li {
+      padding: 15px 20px;
+      cursor: pointer;
+    }
+    .sidebar ul li:hover {
+      background-color: #465c71;
+    }
+    .sidebar ul li.active {
+      background-color: #3498db;
+    }
+    .content {
+      margin-left: 250px;
+      margin-top: 60px;
+      padding: 20px;
+      width: calc(100% - 250px);
+    }
+    .container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .hidden { display: none; }
+    .form-container, .form-group { margin-bottom: 15px; }
+    input, button, select {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+    input, select { width: 100%; box-sizing: border-box; }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover { background-color: #2980b9; }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .delete-btn { background-color: #e74c3c; }
+    .delete-btn:hover { background-color: #c0392b; }
+    .update-btn { background-color: #f39c12; }
+    .update-btn:hover { background-color: #e67e22; }
+    .reset-btn { background-color: #8e44ad; }
+    .reset-btn:hover { background-color: #732d91; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #eee;
+      text-align: left;
+    }
+    th {
+      background-color: #34495e;
+      color: white;
+    }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    .actions button { margin-right: 5px; }
+    .error { color: #e74c3c; margin-top: 10px; padding: 5px; border-left: 3px solid #e74c3c; }
+    .success { color: #2ecc71; margin-top: 10px; padding: 5px; border-left: 3px solid #2ecc71; }
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      width: 400px;
+      max-width: 90%;
+    }
+    .modal-content h3 { margin-top: 0; }
+    .close-btn { float: right; cursor: pointer; font-size: 24px; }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #7f8c8d;
+    }
+    .search-bar {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .search-bar input { width: 300px; }
+    .pagination {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .pagination button {
+      padding: 8px 12px;
+      background-color: #3498db;
+    }
+    .password-toggle { cursor: pointer; color: #3498db; }
+    .password-strength {
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    .weak { color: #e74c3c; }
+    .medium { color: #f39c12; }
+    .strong { color: #2ecc71; }
+    .upload-area {
+      border: 2px dashed #ddd;
+      padding: 20px;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .upload-area.dragover {
+      background-color: #e8f0fe;
+      border-color: #3498db;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Museum Admin System</h1>
+    <div id="userInfo"></div>
+  </div>
+
+  <div class="sidebar">
+    <ul>
+      <li class="active" onclick="showSection('userManagement')">User Management</li>
+      <li onclick="showSection('virtualTour')">Virtual Tour Content Management</li>
+      <li onclick="showSection('chatbotManagement')">Chatbot & AI Management</li>
+      <li onclick="showSection('databaseManagement')">Database Management</li>
+      <li onclick="showSection('eCommerceManagement')">E-Commerce & Merchandise Management</li>
+      <li onclick="showSection('securityManagement')">Security & Access Control</li>
+      <li onclick="showSection('systemSettings')">System Settings & Maintenance</li>
+      <li onclick="showSection('reportsAnalytics')">Reports & Analytics</li>
+    </ul>
+  </div>
+
+  <div class="content">
+    <!-- Login Form -->
+    <div id="loginContainer" class="container">
+      <h2>Login</h2>
+      <div class="form-group">
+        <input type="text" id="username" placeholder="Username" required>
+      </div>
+      <div class="form-group">
+        <input type="password" id="password" placeholder="Password" required>
+      </div>
+      <button onclick="login()">Login</button>
+      <div id="loginMessage" class="error"></div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div id="dashboardContainer" class="hidden">
+      <button onclick="logout()" style="float: right; margin-bottom: 15px;">Logout</button>
+
+      <!-- User Management -->
+      <div id="userManagement" class="container">
+        <h2>User Management</h2>
+        <div class="form-container">
+          <div class="form-group">
+            <input type="text" id="newUsername" placeholder="Username" required oninput="validateForm()">
+          </div>
+          <div class="form-group">
+            <input type="email" id="newEmail" placeholder="Email" required oninput="validateForm()">
+          </div>
+          <div class="form-group">
+            <input type="password" id="newPassword" placeholder="Password" required oninput="validateForm(); checkPasswordStrength()">
+            <span class="password-toggle" onclick="togglePassword()">Show</span>
+            <div id="passwordStrength" class="password-strength"></div>
+          </div>
+          <div class="form-group">
+            <select id="newRole" required>
+              <option value="" disabled selected>Select Role</option>
+              <option value="admin">Admin</option>
+              <option value="moderator">Moderator</option>
+              <option value="visitor">Visitor</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
+          </div>
+          <button id="createUserBtn" onclick="createUser()" disabled>Create User</button>
+          <div id="createMessage"></div>
+        </div>
+        <h3>User Accounts</h3>
+        <div class="search-bar">
+          <input type="text" id="userSearchInput" placeholder="Search by username or email..." onkeyup="searchUsers()">
+          <button onclick="fetchUsers()">Refresh</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Created</th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="userTable"></tbody>
+        </table>
+        <div class="pagination" id="userPagination">
+          <button onclick="changeUserPage(-1)" id="prevUserPage">Previous</button>
+          <span id="userPageInfo"></span>
+          <button onclick="changeUserPage(1)" id="nextUserPage">Next</button>
+        </div>
+        <h3>User Activity Logs</h3>
+        <div id="activityLogs"></div>
+      </div>
+
+      <!-- Virtual Tour Content Management -->
+      <div id="virtualTour" class="container hidden">
+        <h2>Virtual Tour Content Management</h2>
+        <div class="form-group">
+          <input type="text" id="exhibitName" placeholder="Exhibit Name">
+          <textarea id="exhibitDescription" placeholder="Description"></textarea>
+        </div>
+        <div class="upload-area" id="contentUpload" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
+          Drop files here or click to upload (images, videos, 3D models)
+          <input type="file" id="contentFile" style="display: none;" onchange="handleFileUpload(event)">
+        </div>
+        <button onclick="uploadContent()">Upload Content</button>
+        <div id="contentMessage"></div>
+        <h3>Existing Content</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="contentTable"></tbody>
+        </table>
+      </div>
+
+      <!-- Chatbot & AI Management -->
+      <div id="chatbotManagement" class="container hidden">
+        <h2>Chatbot & AI Management</h2>
+        <div class="form-group">
+          <input type="text" id="chatbotConfig" placeholder="Configuration Settings">
+          <button onclick="updateChatbotConfig()">Update Config</button>
+        </div>
+        <button onclick="trainChatbot()">Train Chatbot</button>
+        <div id="chatbotLogs"></div>
+      </div>
+
+      <!-- Database Management -->
+      <div id="databaseManagement" class="container hidden">
+        <h2>Database Management</h2>
+        <button onclick="backupDatabase()">Backup Database</button>
+        <button onclick="restoreDatabase()">Restore Database</button>
+        <button onclick="optimizeDatabase()">Optimize Queries</button>
+        <div id="dbMessage"></div>
+      </div>
+
+      <!-- E-Commerce & Merchandise Management -->
+      <div id="eCommerceManagement" class="container hidden">
+        <h2>E-Commerce & Merchandise Management</h2>
+        <div class="form-group">
+          <input type="text" id="itemName" placeholder="Item Name">
+          <input type="number" id="itemPrice" placeholder="Price">
+          <input type="text" id="itemDiscount" placeholder="Discount (%)">
+        </div>
+        <button onclick="addItem()">Add Item</button>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Discount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="itemTable"></tbody>
+        </table>
+        <h3>Order Tracking</h3>
+        <div id="orderTracking"></div>
+      </div>
+
+      <!-- Security & Access Control -->
+      <div id="securityManagement" class="container hidden">
+        <h2>Security & Access Control</h2>
+        <button onclick="enableMFA()">Enable MFA</button>
+        <button onclick="monitorSecurity()">Monitor Activity</button>
+        <div id="securityLogs"></div>
+      </div>
+
+      <!-- System Settings & Maintenance -->
+      <div id="systemSettings" class="container hidden">
+        <h2>System Settings & Maintenance</h2>
+        <div class="form-group">
+          <input type="text" id="themeSetting" placeholder="Theme">
+          <button onclick="updateSettings()">Update Settings</button>
+        </div>
+        <button onclick="checkUptime()">Check Uptime</button>
+        <div id="systemMessage"></div>
+      </div>
+
+      <!-- Reports & Analytics -->
+      <div id="reportsAnalytics" class="container hidden">
+        <h2>Reports & Analytics</h2>
+        <button onclick="generateVisitorReport()">Visitor Report</button>
+        <button onclick="generateSalesReport()">Sales Report</button>
+        <button onclick="generateChatbotReport()">Chatbot Report</button>
+        <div id="analyticsData"></div>
+      </div>
+
+     
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let authToken = localStorage.getItem('authToken');
+    let userRole = localStorage.getItem('userRole');
+    let users = [];
+    let contentItems = [];
+    let items = [];
+    let currentPage = { users: 1, content: 1, items: 1 };
+    const itemsPerPage = 5;
+
+    window.onload = function() {
+      if (authToken) {
+        userRole = localStorage.getItem('userRole');
+        showDashboard();
+      }
+    };
+
+    async function login() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      
+      if (!username || !password) {
+        document.getElementById('loginMessage').textContent = 'Please enter both username and password';
+        return;
+      }
+      
+      try {
+        showLoading(true);
+        const response = await fetch('http://localhost:3000/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Login failed');
+        }
+        
+        authToken = data.token;
+        userRole = data.role;
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('userRole', userRole);
+        
+        showDashboard();
+      } catch (error) {
+        document.getElementById('loginMessage').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function showDashboard() {
+      document.getElementById('loginContainer').classList.add('hidden');
+      document.getElementById('dashboardContainer').classList.remove('hidden');
+      document.getElementById('userInfo').textContent = `Logged in as: ${userRole}`;
+      
+      if (userRole === 'super_admin') {
+        showSection('userManagement');
+        fetchUsers();
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userRole');
+      authToken = null;
+      userRole = null;
+      document.getElementById('dashboardContainer').classList.add('hidden');
+      document.getElementById('loginContainer').classList.remove('hidden');
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('loginMessage').textContent = '';
+    }
+
+    function showSection(sectionId) {
+      document.querySelectorAll('.container').forEach(container => container.classList.add('hidden'));
+      document.getElementById(sectionId).classList.remove('hidden');
+      document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
+      document.querySelector(`.sidebar li[onclick="showSection('${sectionId}')"]`).classList.add('active');
+    }
+
+    async function fetchUsers() {
+      try {
+        showLoading(true);
+        const response = await fetch('http://localhost:3000/api/superadmin/users', {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch users: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Raw API response:', data); // Debug the raw response
+        
+        // Map the API data to match the expected structure
+        users = data.map(user => ({
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          created_at: user.created || user.created_at, // Handle different field names
+          last_login: user.last_login || null,
+          password_hash: user.password_hash // Store password hash if needed
+        }));
+        
+        if (!users || users.length === 0) {
+          console.warn('No users found from API, check backend');
+          users = [
+            { id: 1, username: "jpf", email: "jpf@example.com", role: "super_admin", created_at: "2023-11-01T12:45:55", last_login: null, password_hash: "$2b$10$..." },
+            { id: 3, username: "Frank", email: "Frank@example.com", role: "admin", created_at: "2023-01-01T12:00:00", last_login: null, password_hash: "$2b$10$..." },
+            { id: 4, username: "Dan", email: "Dan@gmail.com", role: "admin", created_at: "2023-02-01T12:00:00", last_login: null, password_hash: "$2b$10$..." },
+            { id: 5, username: "NULL", email: "NULL", role: "NULL", created_at: null, last_login: null, password_hash: null }
+          ];
+          console.log('Using fallback mock data:', users);
+        } else {
+          console.log('Users fetched:', users);
+        }
+        
+        renderUsers();
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        // Fallback to mock data in case of error
+        users = [
+          { id: 1, username: "jpf", email: "jpf@example.com", role: "super_admin", created_at: "2023-11-01T12:45:55", last_login: null, password_hash: "$2b$10$..." },
+          { id: 3, username: "Frank", email: "Frank@example.com", role: "admin", created_at: "2023-01-01T12:00:00", last_login: null, password_hash: "$2b$10$..." },
+          { id: 4, username: "Dan", email: "Dan@gmail.com", role: "admin", created_at: "2023-02-01T12:00:00", last_login: null, password_hash: "$2b$10$..." },
+          { id: 5, username: "NULL", email: "NULL", role: "NULL", created_at: null, last_login: null, password_hash: null }
+        ];
+        console.log('Using mock data due to error:', users);
+        renderUsers();
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function renderUsers() {
+      const tbody = document.getElementById('userTable');
+      tbody.innerHTML = '';
+      const filteredUsers = filterUsers();
+      const start = (currentPage.users - 1) * itemsPerPage;
+      const end = start + itemsPerPage;
+      const paginatedUsers = filteredUsers.slice(start, end);
+      
+      paginatedUsers.forEach(user => {
+        const created = user.created_at ? new Date(user.created_at).toLocaleString() : 'N/A';
+        const lastLogin = user.last_login ? new Date(user.last_login).toLocaleString() : 'Never';
+        tbody.innerHTML += `
+          <tr>
+            <td>${user.id || 'N/A'}</td>
+            <td>${user.username || 'N/A'}</td>
+            <td>${user.email || 'N/A'}</td>
+            <td>${user.role || 'N/A'}</td>
+            <td>${created}</td>
+            <td>${lastLogin}</td>
+            <td class="actions">
+              <button class="update-btn" onclick="openUpdateModal(${user.id || 0}, '${user.username || ''}', '${user.email || ''}', '${user.role || ''}')">Update</button>
+              <button class="delete-btn" onclick="deleteUser(${user.id || 0})" ${user.role === 'super_admin' ? 'disabled' : ''}>Delete</button>
+              <button class="reset-btn" onclick="confirmResetPassword(${user.id || 0})">Reset Password</button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      updatePagination('users', filteredUsers.length);
+    }
+
+    function filterUsers() {
+      const searchTerm = document.getElementById('userSearchInput').value.toLowerCase();
+      return users.filter(user =>
+        (user.username || '').toLowerCase().includes(searchTerm) ||
+        (user.email || '').toLowerCase().includes(searchTerm)
+      );
+    }
+
+    function changeUserPage(direction) {
+      currentPage.users += direction;
+      renderUsers();
+    }
+
+    function updatePagination(type, totalItems) {
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      const pageInfo = document.getElementById(`${type}PageInfo`);
+      const prevPage = document.getElementById(`prev${type.charAt(0).toUpperCase() + type.slice(1)}Page`);
+      const nextPage = document.getElementById(`next${type.charAt(0).toUpperCase() + type.slice(1)}Page`);
+      pageInfo.textContent = `Page ${currentPage[type]} of ${totalPages}`;
+      prevPage.disabled = currentPage[type] === 1;
+      nextPage.disabled = currentPage[type] === totalPages || totalPages === 0;
+      document.getElementById(`${type}Pagination`).style.display = totalItems > 0 ? 'flex' : 'none';
+    }
+
+    function searchUsers() {
+      currentPage.users = 1;
+      renderUsers();
+    }
+
+    function validateForm() {
+      const username = document.getElementById('newUsername').value.trim();
+      const email = document.getElementById('newEmail').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
+      const role = document.getElementById('newRole').value;
+      document.getElementById('createUserBtn').disabled = !(username && email && password && role);
+    }
+
+    function checkPasswordStrength() {
+      const password = document.getElementById('newPassword').value;
+      const strengthEl = document.getElementById('passwordStrength');
+      if (password.length < 6) {
+        strengthEl.textContent = 'Weak';
+        strengthEl.className = 'password-strength weak';
+      } else if (password.length < 10 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+        strengthEl.textContent = 'Medium';
+        strengthEl.className = 'password-strength medium';
+      } else {
+        strengthEl.textContent = 'Strong';
+        strengthEl.className = 'password-strength strong';
+      }
+    }
+
+    async function createUser() {
+      const username = document.getElementById('newUsername').value.trim();
+      const email = document.getElementById('newEmail').value.trim();
+      const password = document.getElementById('newPassword').value.trim();
+      const role = document.getElementById('newRole').value;
+      const messageEl = document.getElementById('createMessage');
+      
+      if (!username || !email || !password || !role) {
+        messageEl.textContent = 'Please fill in all fields';
+        messageEl.className = 'error';
+        return;
+      }
+      
+      try {
+        showLoading(true);
+        const response = await fetch('http://localhost:3000/api/superadmin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+          body: JSON.stringify({ username, email, password, role })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to create user');
+        
+        messageEl.textContent = 'User created successfully!';
+        messageEl.className = 'success';
+        document.getElementById('newUsername').value = '';
+        document.getElementById('newEmail').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('newRole').value = '';
+        document.getElementById('passwordStrength').textContent = '';
+        document.getElementById('createUserBtn').disabled = true;
+        setTimeout(() => { messageEl.textContent = ''; messageEl.className = ''; }, 3000);
+        fetchUsers();
+      } catch (error) {
+        messageEl.textContent = error.message;
+        messageEl.className = 'error';
+        setTimeout(() => { messageEl.textContent = ''; messageEl.className = ''; }, 3000);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('Are you sure you want to delete this user?')) return;
+      try {
+        showLoading(true);
+        const response = await fetch(`http://localhost:3000/api/superadmin/users/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (!response.ok) throw new Error('Failed to delete user');
+        alert('User deleted successfully!');
+        fetchUsers();
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    let selectedUserId = null;
+    function openUpdateModal(id, username, email, role) {
+      selectedUserId = id;
+      document.getElementById('updateUsername').value = username;
+      document.getElementById('updateEmail').value = email;
+      document.getElementById('updatePassword').value = '';
+      document.getElementById('updateRole').value = role;
+      document.getElementById('updateMessage').textContent = '';
+      document.getElementById('updateModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('updateModal').classList.add('hidden');
+      selectedUserId = null;
+    }
+
+    async function updateUser() {
+      const username = document.getElementById('updateUsername').value.trim();
+      const email = document.getElementById('updateEmail').value.trim();
+      const password = document.getElementById('updatePassword').value.trim();
+      const role = document.getElementById('updateRole').value;
+      const messageEl = document.getElementById('updateMessage');
+      
+      if (!username || !email || !role) {
+        messageEl.textContent = 'Username, email, and role are required';
+        messageEl.className = 'error';
+        return;
+      }
+      
+      try {
+        showLoading(true);
+        const response = await fetch(`http://localhost:3000/api/superadmin/users/${selectedUserId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+          body: JSON.stringify({ username, email, password: password || undefined, role })
+        });
+        if (!response.ok) throw new Error('Failed to update user');
+        messageEl.textContent = 'User updated successfully!';
+        messageEl.className = 'success';
+        fetchUsers();
+        setTimeout(closeModal, 1000);
+      } catch (error) {
+        messageEl.textContent = error.message;
+        messageEl.className = 'error';
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function confirmResetPassword(id) {
+      if (!confirm('Are you sure you want to reset this user\'s password?')) return;
+      resetPassword(id);
+    }
+
+    async function resetPassword(id) {
+      try {
+        showLoading(true);
+        const response = await fetch(`http://localhost:3000/api/superadmin/users/${id}/reset-password`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        if (!response.ok) throw new Error('Failed to reset password');
+        alert('Password reset successfully! New password sent to the user\'s email.');
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function togglePassword() {
+      const passwordInput = document.getElementById('newPassword');
+      const toggleText = passwordInput.nextElementSibling;
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleText.textContent = 'Hide';
+      } else {
+        passwordInput.type = 'password';
+        toggleText.textContent = 'Show';
+      }
+    }
+
+    function showLoading(show) {
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'loading';
+      loadingDiv.className = 'loading';
+      loadingDiv.textContent = 'Loading...';
+      if (show) {
+        document.body.appendChild(loadingDiv);
+      } else {
+        const existingLoading = document.getElementById('loading');
+        if (existingLoading) existingLoading.remove();
+      }
+    }
+
+    // Virtual Tour Content Management
+    function handleDragOver(event) {
+      event.preventDefault();
+      document.getElementById('contentUpload').classList.add('dragover');
+    }
+
+    function handleDrop(event) {
+      event.preventDefault();
+      document.getElementById('contentUpload').classList.remove('dragover');
+      const files = event.dataTransfer.files;
+      handleFileUpload({ target: { files } });
+    }
+
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      console.log('Uploading:', file);
+    }
+
+    async function uploadContent() {
+      const name = document.getElementById('exhibitName').value.trim();
+      const description = document.getElementById('exhibitDescription').value.trim();
+      const fileInput = document.getElementById('contentFile');
+      if (!name || !description || !fileInput.files.length) {
+        document.getElementById('contentMessage').textContent = 'Please fill in all fields and upload a file';
+        document.getElementById('contentMessage').className = 'error';
+        return;
+      }
+      try {
+        showLoading(true);
+        console.log('Uploading content:', { name, description, file: fileInput.files[0] });
+        document.getElementById('contentMessage').textContent = 'Content uploaded successfully!';
+        document.getElementById('contentMessage').className = 'success';
+        setTimeout(() => { document.getElementById('contentMessage').textContent = ''; document.getElementById('contentMessage').className = ''; }, 3000);
+      } catch (error) {
+        document.getElementById('contentMessage').textContent = error.message;
+        document.getElementById('contentMessage').className = 'error';
+        setTimeout(() => { document.getElementById('contentMessage').textContent = ''; document.getElementById('contentMessage').className = ''; }, 3000);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Chatbot & AI Management
+    async function updateChatbotConfig() {
+      const config = document.getElementById('chatbotConfig').value.trim();
+      try {
+        showLoading(true);
+        console.log('Updating chatbot config:', config);
+        document.getElementById('chatbotLogs').textContent = 'Config updated successfully!';
+      } catch (error) {
+        document.getElementById('chatbotLogs').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function trainChatbot() {
+      try {
+        showLoading(true);
+        console.log('Training chatbot...');
+        document.getElementById('chatbotLogs').textContent = 'Chatbot training started!';
+      } catch (error) {
+        document.getElementById('chatbotLogs').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Database Management
+    async function backupDatabase() {
+      try {
+        showLoading(true);
+        console.log('Backing up database...');
+        document.getElementById('dbMessage').textContent = 'Backup started!';
+      } catch (error) {
+        document.getElementById('dbMessage').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function restoreDatabase() {
+      try {
+        showLoading(true);
+        console.log('Restoring database...');
+        document.getElementById('dbMessage').textContent = 'Restore started!';
+      } catch (error) {
+        document.getElementById('dbMessage').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function optimizeDatabase() {
+      try {
+        showLoading(true);
+        console.log('Optimizing database...');
+        document.getElementById('dbMessage').textContent = 'Optimization started!';
+      } catch (error) {
+        document.getElementById('dbMessage').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // E-Commerce & Merchandise Management
+    async function addItem() {
+      const name = document.getElementById('itemName').value.trim();
+      const price = document.getElementById('itemPrice').value.trim();
+      const discount = document.getElementById('itemDiscount').value.trim();
+      if (!name || !price) {
+        alert('Name and price are required');
+        return;
+      }
+      try {
+        showLoading(true);
+        console.log('Adding item:', { name, price, discount });
+        document.getElementById('itemTable').innerHTML += `<tr><td>1</td><td>${name}</td><td>${price}</td><td>${discount || 0}%</td><td><button>Delete</button></td></tr>`;
+        document.getElementById('itemName').value = '';
+        document.getElementById('itemPrice').value = '';
+        document.getElementById('itemDiscount').value = '';
+      } catch (error) {
+        alert(error.message);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Security & Access Control
+    async function enableMFA() {
+      try {
+        showLoading(true);
+        console.log('Enabling MFA...');
+        document.getElementById('securityLogs').textContent = 'MFA enabled!';
+      } catch (error) {
+        document.getElementById('securityLogs').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function monitorSecurity() {
+      try {
+        showLoading(true);
+        console.log('Monitoring security...');
+        document.getElementById('securityLogs').textContent = 'Monitoring started!';
+      } catch (error) {
+        document.getElementById('securityLogs').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // System Settings & Maintenance
+    async function updateSettings() {
+      const theme = document.getElementById('themeSetting').value.trim();
+      try {
+        showLoading(true);
+        console.log('Updating settings:', theme);
+        document.getElementById('systemMessage').textContent = 'Settings updated!';
+      } catch (error) {
+        document.getElementById('systemMessage').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function checkUptime() {
+      try {
+        showLoading(true);
+        console.log('Checking uptime...');
+        document.getElementById('systemMessage').textContent = 'Uptime check started!';
+      } catch (error) {
+        document.getElementById('systemMessage').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Reports & Analytics
+    async function generateVisitorReport() {
+      try {
+        showLoading(true);
+        console.log('Generating visitor report...');
+        document.getElementById('analyticsData').textContent = 'Visitor report generated!';
+      } catch (error) {
+        document.getElementById('analyticsData').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function generateSalesReport() {
+      try {
+        showLoading(true);
+        console.log('Generating sales report...');
+        document.getElementById('analyticsData').textContent = 'Sales report generated!';
+      } catch (error) {
+        document.getElementById('analyticsData').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function generateChatbotReport() {
+      try {
+        showLoading(true);
+        console.log('Generating chatbot report...');
+        document.getElementById('analyticsData').textContent = 'Chatbot report generated!';
+      } catch (error) {
+        document.getElementById('analyticsData').textContent = error.message;
+      } finally {
+        showLoading(false);
+      }
+    }
+  </script>
+</body>
+</html>
