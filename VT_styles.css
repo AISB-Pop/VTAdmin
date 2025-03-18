@@ -1,0 +1,400 @@
+body {
+  min-height: 158vh; /* Ensure the body has a minimum height that includes space for the footer */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure the header and navigation have relative positioning */
+header {
+  position: relative;
+  z-index: 100; /* Increase the z-index to make sure the header is on top */
+}
+
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav li {
+  display: inline-block;
+  position: relative; /* Required for dropdown positioning */
+}
+
+nav a {
+  text-decoration: none;
+  padding: 10px;
+  display: block;
+}
+
+/* Dropdown content initially hidden */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #333; /* Dark background for contrast */
+  min-width: 160px;
+  z-index: 101; /* Make sure the dropdown is above the .VT div */
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Show the dropdown when hovering over the parent */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Optional: Styling for the dropdown items */
+.dropdown-content a {
+  padding: 12px 16px;
+  color: white;
+  text-align: left;
+}
+
+.dropdown-content a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+/* Add this to your existing CSS file (style.css) */
+.gold-border {
+  border: 4px solid gold;  /* Gold border */
+  box-shadow: 0 0 10px gold; /* Optional: adds a glow effect */
+}
+
+/* Make sure the VT container is not interfering with the dropdown */
+.VT {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column; /* Stack elements vertically */
+  justify-content: flex-start; /* Align the items to the top */
+  align-items: center; /* Center the content horizontally */
+  width: 100%; /* Make it take up the full width of the container */
+  height: 61vh; /* Make it take up 80% of the viewport height (adjust as needed) */
+  margin: 0; /* Remove any margins */
+  padding: 0; /* Remove padding to make the image take up the full space */
+  background-color: #fff; /* Light background for the container */
+  border-radius: 0; /* Optional: Remove rounded corners if you want the container to fill the screen completely */
+  box-shadow: none; /* Remove shadow to prevent distraction */
+  position: relative; /* Ensure proper positioning of elements */
+  z-index: 1; /* Keep the z-index lower than the header and dropdowns */
+}
+
+/* Ensure the 360-degree image fills the entire .VT div */
+#panorama {
+  width: 100%; /* Make the panorama image fill the full width */
+  height: 100%; /* Make the panorama image fill the full height of the VT div */
+  object-fit: cover; /* Ensure the image covers the container */
+  border-radius: 0; /* Optional: Remove rounded corners */
+  position: absolute; /* Ensure it covers the entire container */
+  top: 0;
+  left: 0;
+  z-index: 1; /* Keep the panorama image in the background */
+}
+
+.image-gallery {
+  position: absolute;  /* Position it relative to the parent container */
+  bottom: 0;  /* Place it at the bottom of the panorama image */
+  left: 50%;  /* Align the left edge of the gallery at the center of the parent container */
+  transform: translateX(-50%);  /* Shift it left by half of its width to truly center it */
+  display: flex;  /* Use flexbox to align the items within the gallery */
+  justify-content: center;  /* Center the gallery images horizontally */
+  align-items: center;  /* Vertically center the images within the gallery */
+  width: 60%;  /* Set the width of the gallery to 60% of the parent container */
+  height: 150px;  /* Fixed height for the gallery */
+  background-color: rgba(0, 0, 0, 0.5);  /* Optional: Add a background for better visibility */
+  z-index: 2;  /* Ensure it appears above the panorama image */
+}
+
+
+/* Container for images in the gallery */
+.images-container {
+  display: flex;
+  justify-content: center; /* Center the images inside the container */
+  flex-wrap: nowrap; /* Prevent wrapping of images */
+  overflow-x: auto; /* Enable horizontal scrolling */
+  gap: 10px; /* Add space between images */
+  width: 100%; /* Full width of the gallery container */
+  padding: 0 10px; /* Horizontal padding for better spacing */
+  scrollbar-width: none; /* Hide scrollbar in Firefox */
+}
+
+.images-container::-webkit-scrollbar {
+  display: none; /* Hide scrollbar in Webkit browsers (Chrome, Safari) */
+}
+
+.images-container .image-wrapper {
+  position: relative; /* Required for positioning text on top of the image */
+}
+
+/* Text styling */
+.image-text {
+  position: absolute;
+  top: 50%; /* Center vertically */
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Offset to truly center the text */
+  color: white; /* White text for contrast */
+  font-size: 14px; /* Adjust text size */
+  font-weight: bold; /* Bold text for emphasis */
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Optional: Add text shadow for better visibility */
+  opacity: 1; /* Start with invisible text */
+  transition: opacity 0.3s ease; /* Smooth transition for text visibility */
+  cursor: pointer; /* Make the text look clickable */
+}
+
+/* Image styling */
+.images-container img {
+  width: 80px; /* Reduce size of the images to make them smaller */
+  height: 80px; /* Reduce size of the images */
+  margin: 5px; /* Space between images */
+  border-radius: 8px; /* Optional: Rounded corners for the images */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: Add shadow to the images for better effect */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth scaling and shadow change on hover */
+}
+
+.images-container img:hover {
+  transform: scale(1.05); /* Slightly enlarge images on hover */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Enhance shadow on hover for more depth */
+}
+
+/* Gallery button styles */
+.gallery-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 30px;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 3; /* Ensure buttons are on top */
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+
+.gallery-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8); /* Darker background on hover */
+}
+
+.left-btn {
+  left: 10px;
+}
+
+.right-btn {
+  right: 10px;
+}
+
+/* Ensure smooth scroll for smaller screens */
+@media (max-width: 768px) {
+  .VT {
+    width: 100%; /* Make the virtual tour take up the full width of the viewport */
+    height: 100vh; /* Full height on smaller screens */
+    flex-direction: column; /* Stack the viewer and gallery vertically on small screens */
+  }
+
+  #panorama {
+    height: 60vh; /* Reduce panorama height for smaller screens */
+  }
+
+  .images-container img {
+    width: 100px; /* Adjust the size of your images */
+    height: 100px; /* Adjust the size of your images */
+    cursor: pointer;
+  }
+
+  .gallery-btn {
+    font-size: 25px; /* Slightly smaller button size for smaller screens */
+    padding: 8px;
+  }
+}
+
+/* Footer Styling */
+footer {
+  background-color: #333;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  font-size: 14px;
+  position: relative;
+}
+
+footer a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+.custom-exit {
+  background-image: url('exit.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 60px; /* Adjust based on your image size */
+  height: 70px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+.custom-exit-custom {
+  background-image: url('exit.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 100px; /* Adjust based on your image size */
+  height: 100px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+.custom-arrow-quad {
+  background-image: url('arrow_up.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 50px; /* Adjust based on your image size */
+  height: 50px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+.custom-arrow-up-clinic {
+  background-image: url('arrow_up.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 80px; /* Adjust based on your image size */
+  height: 80px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+.custom-arrow-up {
+  background-image: url('arrow_up.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 100px; /* Adjust based on your image size */
+  height: 100px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+.custom-arrow-down {
+  background-image: url('arrow_down.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 100px; /* Adjust based on your image size */
+  height: 100px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+.custom-arrow-left {
+  background-image: url('arrow_left.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 100px; /* Adjust based on your image size */
+  height: 100px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+.custom-arrow-left-custom {
+  background-image: url('arrow_left.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 50px; /* Adjust based on your image size */
+  height: 45px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+.custom-arrow-left-guidance {
+  background-image: url('arrow_left.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 60px; /* Adjust based on your image size */
+  height: 70px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+.custom-arrow-right {
+  background-image: url('arrow_right.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 100px; /* Adjust based on your image size */
+  height: 100px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+.custom-arrow-right-custom {
+  background-image: url('arrow_right.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 50px; /* Adjust based on your image size */
+  height: 50px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+.custom-document {
+  background-image: url('document.png'); /* Path to your arrow image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 50px; /* Adjust based on your image size */
+  height: 50px; /* Adjust based on your image size */
+  cursor: pointer; /* Make it clear it's clickable */
+}
+
+/* Style for the hover text container */
+#hover-text {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.7);  /* Semi-transparent background */
+  color: white;  /* White text color */
+  padding: 10px 15px;  /* Padding around the text */
+  font-size: 16px;  /* Font size */
+  font-weight: bold;  /* Bold font */
+  border-radius: 5px;  /* Rounded corners */
+  display: none;  /* Initially hide the text */
+  z-index: 9999;  /* Make sure the text is above other content */
+  text-align: center;
+}
+
+/* Style when the text is shown */
+#hover-text.show {
+  display: block;  /* Show the text */
+}
+
+  /* Popup container styles */
+  .popup-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Dark background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    padding: 20px;
+  }
+
+  /* Popup content container */
+  .popup-content {
+    background-color: #ffffffcd;
+    padding: 30px;
+    max-width: 600px;
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+  }
+
+  /* Title for Vision and Mission */
+  .popup-content h2 {
+    font-size: 24px;
+    color: #0b461b;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+
+  /* Paragraph text styles */
+  .popup-content p {
+    font-size: 18px;
+    color: #0b461b;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    text-align: justify;
+  }
