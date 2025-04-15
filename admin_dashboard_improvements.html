@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - FEUR</title>
+    <link rel="icon" type="image/x-icon" href="pictures/feu_logo-login.png">
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="admin_dashboard_improvements.css">
+    
+    <!-- Third-party CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/dropzone.min.css">
+    
+    <style>
+        /* Quick Dashboard Styles */
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.online {
+            background-color: #4CAF50;
+        }
+        
+        .status-indicator.offline {
+            background-color: #f44336;
+        }
+        
+        .status-indicator.warning {
+            background-color: #FFC107;
+        }
+        
+        .trend {
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        
+        .trend.positive {
+            color: #4CAF50;
+        }
+        
+        .trend.negative {
+            color: #f44336;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: start;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .activity-item i {
+            margin-right: 10px;
+            margin-top: 3px;
+        }
+        
+        .activity-details {
+            flex: 1;
+        }
+        
+        .activity-details p {
+            margin: 0;
+        }
+        
+        .activity-details small {
+            color: #666;
+        }
+        
+        .chart-wrapper {
+            height: 300px;
+            margin-bottom: 20px;
+        }
+    </style>
+    
+    <!-- Third-party JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dropzone@5.9.3/dist/dropzone.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ua-parser-js@1.0.35/dist/ua-parser.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-header">
+            <img src="pictures/feu_logo-login.png" alt="FEUR Logo" class="logo">
+            <div class="user-info">
+                <span id="user-role"></span>
+                <span id="user-email"></span>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <button id="theme-toggle" class="btn btn-secondary">
+                <i class="fas fa-moon"></i>
+            </button>
+            <button id="notifications-toggle" class="btn btn-secondary">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge">0</span>
+            </button>
+            <button id="logout-btn" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Admin Panel</h3>
+            </div>
+            <ul class="nav-links">
+                <li>
+                    <a href="#" onclick="showSection('dashboard-overview')" class="active">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard Overview
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showSection('user-management')">
+                        <i class="fas fa-users"></i>
+                        User Management
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showSection('content-management')">
+                        <i class="fas fa-file-alt"></i>
+                        Content Management
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showSection('security')">
+                        <i class="fas fa-shield-alt"></i>
+                        Security & Logs
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showSection('analytics')">
+                        <i class="fas fa-chart-line"></i>
+                        Analytics
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showSection('ecommerce')">
+                        <i class="fas fa-shopping-cart"></i>
+                        E-commerce
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="showSection('settings')">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Overview -->
+            <section id="dashboard-overview" class="dashboard-section active">
+                <div class="section-header">
+                    <h2>Dashboard Overview</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="refreshDashboard()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportDashboardData()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="system-status">
+                    <div class="status-card">
+                        <h3>System Health</h3>
+                        <div class="status-indicators">
+                            <div class="status-item">
+                                <span class="status-indicator online"></span>
+                                Server Status
+                            </div>
+                            <div class="status-item">
+                                <span class="status-indicator online"></span>
+                                Database
+                            </div>
+                            <div class="status-item">
+                                <span class="status-indicator online"></span>
+                                Cache
+                            </div>
+                        </div>
+                    </div>
+                    <div class="status-card">
+                        <h3>Active Users</h3>
+                        <p id="active-users-count">0</p>
+                        <small>Last 5 minutes</small>
+                    </div>
+                    <div class="status-card">
+                        <h3>System Load</h3>
+                        <p id="system-load">0%</p>
+                        <small>CPU Usage</small>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <p id="total-users">0</p>
+                        <small class="trend" id="users-trend"></small>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Sessions</h3>
+                        <p id="active-sessions">0</p>
+                        <small>Average Duration: <span id="avg-session-duration">0m</span></small>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Today's Sales</h3>
+                        <p id="today-sales">₱0</p>
+                        <small class="trend" id="sales-trend"></small>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pending Orders</h3>
+                        <p id="pending-orders">0</p>
+                        <small>Processing Time: <span id="avg-processing-time">0m</span></small>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <h3>Real-time Activity</h3>
+                        <canvas id="realtime-activity-chart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>User Sessions</h3>
+                        <canvas id="session-duration-chart"></canvas>
+                    </div>
+                </div>
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <h3>Monthly Sales</h3>
+                        <canvas id="sales-chart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>User Distribution</h3>
+                        <canvas id="users-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="recent-activity">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-log" id="recent-activity-log">
+                        <!-- Activity items will be dynamically added here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- User Management -->
+            <section id="user-management" class="dashboard-section">
+                <div class="section-header">
+                    <h2>User Management</h2>
+                    <div class="header-actions">
+                        <button id="add-user-btn" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Add User
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportUsers()">
+                            <i class="fas fa-file-export"></i> Export
+                        </button>
+                        <button class="btn btn-secondary" onclick="importUsers()">
+                            <i class="fas fa-file-import"></i> Import
+                        </button>
+                    </div>
+                </div>
+
+                <!-- User Filters -->
+                <div class="filters">
+                    <div class="search-bar">
+                        <input type="text" id="user-search" placeholder="Search users...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="filter-group">
+                        <label>Role:</label>
+                        <select id="role-filter">
+                            <option value="">All</option>
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
+                            <option value="moderator">Moderator</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Status:</label>
+                        <select id="status-filter">
+                            <option value="">All</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="banned">Banned</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="table-responsive">
+                    <table id="users-table" class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Last Active</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- User rows will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Content Management -->
+            <section id="content-management" class="dashboard-section">
+                <div class="section-header">
+                    <h2>Content Management</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="createNewContent()">
+                            <i class="fas fa-plus"></i> New Content
+                        </button>
+                        <button class="btn btn-secondary" onclick="manageMedia()">
+                            <i class="fas fa-images"></i> Media Library
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content Tabs -->
+                <div class="content-tabs">
+                    <button class="tab-btn active" onclick="showContentTab('products')">Products</button>
+                    <button class="tab-btn" onclick="showContentTab('articles')">Articles</button>
+                    <button class="tab-btn" onclick="showContentTab('pages')">Pages</button>
+                </div>
+
+                <!-- Content Area -->
+                <div id="content-area">
+                    <!-- Content will be dynamically loaded here -->
+                </div>
+            </section>
+
+            <!-- Security & Logs -->
+            <section id="security" class="dashboard-section">
+                <div class="section-header">
+                    <h2>Security & Logs</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="generateSecurityReport()">
+                            <i class="fas fa-file-alt"></i> Generate Report
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportLogs()">
+                            <i class="fas fa-download"></i> Export Logs
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Security Tabs -->
+                <div class="security-tabs">
+                    <button class="tab-btn active" onclick="showSecurityTab('login-attempts')">Login Attempts</button>
+                    <button class="tab-btn" onclick="showSecurityTab('banned-users')">Banned Users</button>
+                    <button class="tab-btn" onclick="showSecurityTab('activity-logs')">Activity Logs</button>
+                </div>
+
+                <!-- Security Content -->
+                <div id="security-logs">
+                    <!-- Security content will be dynamically loaded here -->
+                </div>
+            </section>
+
+            <!-- Analytics -->
+            <section id="analytics" class="dashboard-section">
+                <div class="section-header">
+                    <h2>Analytics</h2>
+                    <div class="header-actions">
+                        <select id="analytics-timeframe" class="form-control">
+                            <option value="day">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="exportAnalytics()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Analytics Grid -->
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Traffic Overview</h3>
+                        <canvas id="traffic-chart"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Conversion Rate</h3>
+                        <canvas id="conversion-chart"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>User Engagement</h3>
+                        <canvas id="engagement-chart"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Revenue Analysis</h3>
+                        <canvas id="revenue-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- E-commerce -->
+            <section id="ecommerce" class="dashboard-section">
+                <div class="section-header">
+                    <h2>E-commerce Management</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="addNewProduct()">
+                            <i class="fas fa-plus"></i> Add Product
+                        </button>
+                        <button class="btn btn-secondary" onclick="manageInventory()">
+                            <i class="fas fa-boxes"></i> Inventory
+                        </button>
+                    </div>
+                </div>
+
+                <!-- E-commerce Tabs -->
+                <div class="ecommerce-tabs">
+                    <button class="tab-btn active" onclick="showEcommerceTab('orders')">Orders</button>
+                    <button class="tab-btn" onclick="showEcommerceTab('inventory')">Inventory</button>
+                    <button class="tab-btn" onclick="showEcommerceTab('transactions')">Transactions</button>
+                    <button class="tab-btn" onclick="showEcommerceTab('reports')">Reports</button>
+                </div>
+
+                <!-- E-commerce Content -->
+                <div id="ecommerce-content">
+                    <!-- E-commerce content will be dynamically loaded here -->
+                </div>
+            </section>
+
+            <!-- Settings -->
+            <section id="settings" class="dashboard-section">
+                <div class="section-header">
+                    <h2>Settings</h2>
+                    <div class="header-actions">
+                        <button class="btn btn-primary" onclick="saveSettings()">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Settings Tabs -->
+                <div class="settings-tabs">
+                    <button class="tab-btn active" onclick="showSettingsTab('general')">General</button>
+                    <button class="tab-btn" onclick="showSettingsTab('security')">Security</button>
+                    <button class="tab-btn" onclick="showSettingsTab('notifications')">Notifications</button>
+                    <button class="tab-btn" onclick="showSettingsTab('backup')">Backup</button>
+                </div>
+
+                <!-- Settings Content -->
+                <div id="settings-content">
+                    <!-- Settings content will be dynamically loaded here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="user-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title">Add New User</h2>
+            <form id="user-form" onsubmit="saveUser(event)">
+                <!-- User form fields will be dynamically loaded here -->
+            </form>
+        </div>
+    </div>
+
+    <div id="content-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="content-modal-title">Create New Content</h2>
+            <form id="content-form" onsubmit="saveContent(event)">
+                <!-- Content form fields will be dynamically loaded here -->
+            </form>
+        </div>
+    </div>
+
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="product-modal-title">Add New Product</h2>
+            <form id="product-form" onsubmit="saveProduct(event)">
+                <!-- Product form fields will be dynamically loaded here -->
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container">
+        <!-- Notifications will be dynamically added here -->
+    </div>
+
+    <!-- Core JavaScript -->
+    <script src="admin_dashboard_improvements.js"></script>
+    <script src="admin_functions.js"></script>
+    <script src="dashboard_functions.js"></script>
+</body>
+</html> 
