@@ -1,316 +1,752 @@
-const express = require('express');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const cors = require('cors');
-const db = require('./db_config');
+import express from 'express';
+import mysql from 'mysql2';
+import bcrypt from 'bcrypt';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import helmet from 'helmet';
+import crypto from 'crypto';
+import { WebSocketServer } from 'ws';
+import http from 'http';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
+
+// WebSocket connection handling
+wss.on('connection', (ws) => {
+    console.log('New WebSocket connection');
+    
+    ws.on('message', (message) => {
+        console.log('Received:', message);
+        // Broadcast to all clients
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(message);
+            }
+        });
+    });
+});
+
 const port = 3002;
+
+// Set up EJS for templating
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Generate nonce for each request
+app.use((req, res, next) => {
+    res.locals.nonce = crypto.randomBytes(16).toString('base64');
+    next();
+});
+
+// Middleware - Configure all security headers
+app.use(helmet({
+    contentSecurityPolicy: {
+        useDefaults: false,
+        directives: {
+            "default-src": ["'self'"],
+            "script-src": [
+                "'self'",
+                (req, res) => `'nonce-${res.locals.nonce}'`,
+                "https://cdn.jsdelivr.net"
+            ],
+            "style-src": [
+                "'self'",
+                (req, res) => `'nonce-${res.locals.nonce}'`
+            ],
+            "img-src": ["'self'"],
+            "connect-src": ["'self'", "https://api.emailjs.com"],
+            "font-src": ["'self'"],
+            "object-src": ["'none'"],
+            "media-src": ["'none'"],
+            "frame-src": ["'none'"],
+            "frame-ancestors": ["'none'"],
+            "form-action": ["'self'"],
+            "base-uri": ["'self'"],
+            "manifest-src": ["'none'"],
+            "upgrade-insecure-requests": []
+        }
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false
+}));
 
 // Configure CORS
 app.use(cors({
-    origin: '*', // Allow all origins during development
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
+    origin: true, // Allow all origins temporarily for development
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true,
+    maxAge: 86400
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Add test endpoint
-app.get('/test', (req, res) => {
-    res.json({ success: true, message: 'Server is running!' });
+// Add security headers
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    next();
 });
 
-// Add analytics endpoint
+// Add Cache-Control headers
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+    }
+    next();
+});
+
+app.use(express.json());
+app.use(express.static('public', {
+    setHeaders: (res, path) => {
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('X-Frame-Options', 'DENY');
+        res.setHeader('X-XSS-Protection', '1; mode=block');
+        const csp = res.getHeader('Content-Security-Policy');
+        if (csp) {
+            res.setHeader('Content-Security-Policy', csp);
+        }
+    }
+}));
+
+// Serve login-signup page dynamically
+app.get('/login-signup', (req, res) => {
+    res.render('login-signup', { nonce: res.locals.nonce });
+});
+
+// Database connection
+const db = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '1234',
+    database: 'feur_admin_db',
+    port: 3306
+});
+
+// Connect to database
+db.connect((err) => {
+    if (err) {
+        console.error('Error connecting to database:', err);
+        return;
+    }
+    console.log('Connected to MySQL database');
+});
+
+// Create tables if they don't exist
+const createTables = async () => {
+    try {
+        await db.promise().query(`
+            CREATE TABLE IF NOT EXISTS login_attempts (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                email VARCHAR(255) NOT NULL,
+                ip_address VARCHAR(45),
+                status VARCHAR(50) NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                user_agent TEXT
+            )
+        `);
+
+        await db.promise().query(`
+            CREATE TABLE IF NOT EXISTS banned_users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                reason TEXT,
+                banned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                banned_until TIMESTAMP NULL,
+                banned_by VARCHAR(255)
+            )
+        `);
+
+        await db.promise().query(`
+            CREATE TABLE IF NOT EXISTS activity_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_email VARCHAR(255),
+                action VARCHAR(100) NOT NULL,
+                details TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        console.log('Security tables created successfully');
+    } catch (error) {
+        console.error('Error creating security tables:', error);
+    }
+};
+
+// Call createTables when server starts
+createTables();
+
+// Login endpoint
+app.post('/api/login', async (req, res) => {
+    const { email, password } = req.body;
+    const ipAddress = req.ip;
+    const userAgent = req.headers['user-agent'];
+
+    if (!email || !password) {
+        await logLoginAttempt('MISSING_CREDENTIALS', email, ipAddress, userAgent);
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Invalid credentials' 
+        });
+    }
+
+    try {
+        const [bannedUser] = await db.promise().query(
+            'SELECT * FROM banned_users WHERE email = ? AND (banned_until IS NULL OR banned_until > NOW())',
+            [email]
+        );
+
+        if (bannedUser.length > 0) {
+            await logLoginAttempt('BANNED', email, ipAddress, userAgent);
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied'
+            });
+        }
+
+        const [outsiders] = await db.promise().query(
+            'SELECT * FROM outsiders WHERE email = ?',
+            [email]
+        );
+
+        if (outsiders.length > 0) {
+            const user = outsiders[0];
+            if (!user.password_hash) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'User account error: No password set. Please reset your password.' 
+                });
+            }
+
+            const validPassword = await bcrypt.compare(password, user.password_hash);
+            if (validPassword) {
+                await db.promise().query(
+                    'INSERT INTO activity_logs (user_email, action, details) VALUES (?, ?, ?)',
+                    [email, 'LOGIN', 'User logged in successfully']
+                );
+
+                return res.json({
+                    success: true,
+                    user: {
+                        email: user.email,
+                        role: 'outsider'
+                    }
+                });
+            }
+
+            await logLoginAttempt('FAILED', email, ipAddress, userAgent);
+        }
+
+        const [insiders] = await db.promise().query(
+            'SELECT * FROM insiders WHERE email = ?',
+            [email]
+        );
+
+        if (insiders.length > 0) {
+            const user = insiders[0];
+            if (!user.password_hash) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'User account error: No password set. Please reset your password.' 
+                });
+            }
+
+            const validPassword = await bcrypt.compare(password, user.password_hash);
+            if (validPassword) {
+                await db.promise().query(
+                    'INSERT INTO activity_logs (user_email, action, details) VALUES (?, ?, ?)',
+                    [email, 'LOGIN', 'User logged in successfully']
+                );
+
+                return res.json({
+                    success: true,
+                    user: {
+                        email: user.email,
+                        role: 'insider'
+                    }
+                });
+            }
+
+            await logLoginAttempt('FAILED', email, ipAddress, userAgent);
+        }
+
+        await logLoginAttempt('USER_NOT_FOUND', email, ipAddress, userAgent);
+        res.status(401).json({ 
+            success: false, 
+            message: 'Invalid credentials' 
+        });
+    } catch (error) {
+        await logLoginAttempt('ERROR', email, ipAddress, userAgent);
+        return res.status(500).json({
+            success: false,
+            message: 'An error occurred'
+        });
+    }
+});
+
+// Helper function for logging login attempts
+async function logLoginAttempt(status, email, ipAddress, userAgent) {
+    try {
+        await db.promise().query(
+            'INSERT INTO login_attempts (email, ip_address, status, user_agent) VALUES (?, ?, ?, ?)',
+            [email || 'unknown', ipAddress, status, userAgent]
+        );
+    } catch (err) {}
+}
+
+// Signup endpoint
+app.post('/api/signup', async (req, res) => {
+    const { email, password, accountType, contact_number, birthday, age, gender } = req.body;
+
+    if (!email || !password || !accountType) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'Email, password, and account type are required' 
+        });
+    }
+
+    if (accountType === 'insider' && (!contact_number || !birthday || !age || !gender)) {
+        return res.status(400).json({ 
+            success: false, 
+            message: 'All fields are required for insider account' 
+        });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const table = accountType === 'outsider' ? 'outsiders' : 'insiders';
+
+        if (accountType === 'outsider') {
+            await db.promise().query(
+                'INSERT INTO outsiders (email, password_hash, contact_number) VALUES (?, ?, ?)',
+                [email, hashedPassword, contact_number || null]
+            );
+        } else {
+            await db.promise().query(
+                'INSERT INTO insiders (email, password_hash, contact_number, birthday, age, gender) VALUES (?, ?, ?, ?, ?, ?)',
+                [email, hashedPassword, contact_number, birthday, age, gender]
+            );
+        }
+
+        res.json({ success: true, message: 'Account created successfully' });
+    } catch (error) {
+        if (error.code === 'ER_DUP_ENTRY') {
+            res.status(400).json({ success: false, message: 'Email already exists' });
+        } else {
+            res.status(500).json({ success: false, message: 'Server error during signup' });
+        }
+    }
+});
+
+// Reset password endpoint
+app.post('/api/reset-password', async (req, res) => {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+        return res.status(400).json({ success: false, message: 'Email and new password are required' });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        const [outsiderResult] = await db.promise().query(
+            'UPDATE outsiders SET password_hash = ? WHERE email = ?',
+            [hashedPassword, email]
+        );
+
+        const [insiderResult] = await db.promise().query(
+            'UPDATE insiders SET password_hash = ? WHERE email = ?',
+            [hashedPassword, email]
+        );
+
+        if (outsiderResult.affectedRows > 0 || insiderResult.affectedRows > 0) {
+            res.json({ success: true, message: 'Password reset successfully' });
+        } else {
+            res.status(404).json({ success: false, message: 'User not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Server error during password reset' });
+    }
+});
+
+// Test endpoint to verify database connection
+app.get('/api/test-db', async (req, res) => {
+    try {
+        const [result] = await db.promise().query('SELECT DATABASE() as db');
+        res.json({ success: true, database: result[0].db });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Failed to connect to database' });
+    }
+});
+
+// Analytics endpoint
 app.get('/api/analytics', async (req, res) => {
     try {
-        // Get total users count from all tables
-        const [[adminCount]] = await db.query('SELECT COUNT(*) as count FROM admins');
-        const [[outsiderCount]] = await db.query('SELECT COUNT(*) as count FROM outsiders');
-        const [[insiderCount]] = await db.query('SELECT COUNT(*) as count FROM insiders');
+        const [outsidersCount] = await db.promise().query('SELECT COUNT(*) as count FROM outsiders');
+        const [insidersCount] = await db.promise().query('SELECT COUNT(*) as count FROM insiders');
+        const totalUsers = outsidersCount[0].count + insidersCount[0].count;
+
+        const analyticsData = {
+            success: true,
+            totalUsers: totalUsers,
+            activeSessions: Math.floor(Math.random() * 50) + 10,
+            todaySales: Math.floor(Math.random() * 10000),
+            pendingOrders: Math.floor(Math.random() * 20)
+        };
+
+        res.json(analyticsData);
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error during analytics' 
+        });
+    }
+});
+
+// Analytics dashboard endpoint
+app.get('/api/analytics/dashboard', async (req, res) => {
+    try {
+        const [outsidersCount] = await db.promise().query('SELECT COUNT(*) as count FROM outsiders');
+        const [insidersCount] = await db.promise().query('SELECT COUNT(*) as count FROM insiders');
+        const totalUsers = outsidersCount[0].count + insidersCount[0].count;
+
+        const analyticsData = {
+            success: true,
+            totalUsers: totalUsers,
+            activeSessions: Math.floor(Math.random() * 50) + 10,
+            todaySales: Math.floor(Math.random() * 10000),
+            pendingOrders: Math.floor(Math.random() * 20),
+            avgSessionDuration: Math.floor(Math.random() * 30) + 5,
+            avgProcessingTime: Math.floor(Math.random() * 10) + 2,
+            usersTrend: Math.floor(Math.random() * 20) - 10,
+            salesToday: Math.floor(Math.random() * 5000)
+        };
+
+        res.json(analyticsData);
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error during analytics' 
+        });
+    }
+});
+
+// Users endpoint
+app.get('/api/users', async (req, res) => {
+    try {
+        const [outsiders] = await db.promise().query('SELECT * FROM outsiders');
+        const [insiders] = await db.promise().query('SELECT * FROM insiders');
         
-        // Get active sessions (currently logged in users)
-        const [[activeSessions]] = await db.query(
-            'SELECT COUNT(DISTINCT email) as count FROM login_attempts WHERE success = true AND attempt_time > DATE_SUB(NOW(), INTERVAL 24 HOUR)'
+        const users = [
+            ...outsiders.map(user => ({ ...user, role: 'outsider' })),
+            ...insiders.map(user => ({ ...user, role: 'insider' }))
+        ];
+
+        res.json({
+            success: true,
+            users: users
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error during users fetch' 
+        });
+    }
+});
+
+// Get single user endpoint
+app.post('/api/users/get', async (req, res) => {
+    try {
+        const { id } = req.body;
+        const [outsider] = await db.promise().query(`
+            SELECT 
+                o.id,
+                o.email,
+                o.contact_number,
+                'outsider' as role,
+                CASE 
+                    WHEN b.email IS NOT NULL THEN 'banned'
+                    ELSE 'active'
+                END as status
+            FROM outsiders o
+            LEFT JOIN banned_users b ON o.email = b.email AND (b.banned_until IS NULL OR b.banned_until > NOW())
+            WHERE o.id = ?
+        `, [id]);
+
+        if (outsider.length === 0) {
+            const [insider] = await db.promise().query(`
+                SELECT 
+                    i.id,
+                    i.email,
+                    i.contact_number,
+                    i.birthday,
+                    i.age,
+                    i.gender,
+                    'insider' as role,
+                    CASE 
+                        WHEN b.email IS NOT NULL THEN 'banned'
+                        ELSE 'active'
+                    END as status
+                FROM insiders i
+                LEFT JOIN banned_users b ON i.email = b.email AND (b.banned_until IS NULL OR b.banned_until > NOW())
+                WHERE i.id = ?
+            `, [id]);
+
+            if (insider.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+
+            return res.json({
+                success: true,
+                user: insider[0]
+            });
+        }
+
+        res.json({
+            success: true,
+            user: outsider[0]
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch user details'
+        });
+    }
+});
+
+// User management endpoints
+app.post('/api/users/update', async (req, res) => {
+    try {
+        const { id, username, email, role, status } = req.body;
+        const table = role === 'outsider' ? 'outsiders' : 'insiders';
+        await db.promise().query(
+            `UPDATE ${table} SET email = ?, contact_number = ? WHERE id = ?`,
+            [email, username, id]
         );
-        
-        // Get today's orders count
-        const [[pendingOrders]] = await db.query(
-            'SELECT COUNT(*) as count FROM orders WHERE status = "pending"'
+        res.json({ success: true, message: 'User updated successfully' });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error during user update' 
+        });
+    }
+});
+
+app.post('/api/users/delete', async (req, res) => {
+    try {
+        const { userType, id } = req.body;
+        const table = userType === 'outsider' ? 'outsiders' : 'insiders';
+        await db.promise().query(
+            `DELETE FROM ${table} WHERE id = ?`,
+            [id]
         );
-        
-        // Get today's sales
-        const [[todaySales]] = await db.query(
-            'SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE DATE(created_at) = CURDATE() AND status != "cancelled"'
+        res.json({ success: true, message: 'User deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error during user deletion' 
+        });
+    }
+});
+
+// Security log endpoints
+app.get('/api/security/login-attempts', async (req, res) => {
+    try {
+        const [attempts] = await db.promise().query(
+            'SELECT id, email, ip_address, status, timestamp, user_agent FROM login_attempts ORDER BY id DESC LIMIT 100'
+        );
+
+        const processedAttempts = attempts.map(attempt => ({
+            id: attempt.id,
+            email: attempt.email || 'unknown',
+            ip_address: attempt.ip_address || 'unknown',
+            status: attempt.status || 'unknown',
+            timestamp: attempt.timestamp,
+            user_agent: attempt.user_agent || 'unknown'
+        }));
+
+        res.json({
+            success: true,
+            attempts: processedAttempts
+        });
+    } catch (error) {
+        console.error('Error fetching login attempts:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch login attempts',
+            error: error.message
+        });
+    }
+});
+
+app.get('/api/security/banned-users', async (req, res) => {
+    try {
+        const [bannedUsers] = await db.promise().query(
+            'SELECT id, email, reason, banned_by FROM banned_users WHERE banned_until IS NULL OR banned_until > NOW() ORDER BY id DESC'
         );
 
         res.json({
             success: true,
-            totalUsers: adminCount.count + outsiderCount.count + insiderCount.count,
-            activeSessions: activeSessions.count,
-            todaySales: todaySales.total,
-            pendingOrders: pendingOrders.count
+            bannedUsers: bannedUsers.map(user => ({
+                id: user.id,
+                email: user.email,
+                reason: user.reason,
+                banned_by: user.banned_by
+            }))
         });
     } catch (error) {
-        console.error('Error fetching analytics:', error);
-        res.status(500).json({ success: false, message: 'Error fetching analytics data' });
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch banned users'
+        });
     }
 });
 
-const SECRET_KEY = 'your_secret_key'; // Change this to a strong, secret key
+app.get('/api/security/activity-logs', async (req, res) => {
+    try {
+        const [logs] = await db.promise().query(
+            'SELECT id, user_email, action, details FROM activity_logs ORDER BY id DESC LIMIT 100'
+        );
 
-// Initialize database tables
-async function initializeDatabase() {
-  try {
-    // Create admins table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS admins (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(100) NOT NULL,
-        email VARCHAR(100) NOT NULL UNIQUE,
-        password_hash VARCHAR(255) NOT NULL,
-        role_id ENUM('admin', 'superadmin') NOT NULL,
-        status ENUM('active', 'inactive', 'banned') DEFAULT 'active',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('Admins table created successfully');
-
-    // Create outsiders table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS outsiders (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(100) NOT NULL,
-        email VARCHAR(100) NOT NULL UNIQUE,
-        password_hash VARCHAR(255) NOT NULL,
-        contact_number VARCHAR(20) NOT NULL,
-        status ENUM('active', 'inactive', 'banned') DEFAULT 'active',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('Outsiders table created successfully');
-
-    // Create insiders table
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS insiders (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(100) NOT NULL,
-        email VARCHAR(100) NOT NULL UNIQUE,
-        password_hash VARCHAR(255) NOT NULL,
-        contact_number VARCHAR(20) NOT NULL,
-        birthday DATE NOT NULL,
-        age INT NOT NULL,
-        gender VARCHAR(20) NOT NULL,
-        status ENUM('active', 'inactive', 'banned') DEFAULT 'active',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('Insiders table created successfully');
-
-    // Create default superadmin if not exists
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-    await db.query(`
-      INSERT IGNORE INTO admins (username, email, password_hash, role_id, status)
-      SELECT 'Super Admin', 'superadmin@feuroosevelt.edu.ph', ?, 'superadmin', 'active'
-      FROM dual
-      WHERE NOT EXISTS (SELECT 1 FROM admins WHERE email = 'superadmin@feuroosevelt.edu.ph')
-    `, [hashedPassword]);
-    console.log('Superadmin account ready');
-
-  } catch (error) {
-    console.error('Database initialization error:', error);
-  }
-}
-
-// Initialize database
-initializeDatabase();
-
-// User signup endpoint
-app.post('/api/signup', async (req, res) => {
-  try {
-    const { email, password, accountType, contact_number, birthday, age, gender } = req.body;
-    
-    // Validate required fields
-    if (!email || !password || !contact_number) {
-      return res.status(400).json({ success: false, message: 'Missing required fields' });
+        res.json({
+            success: true,
+            logs: logs.map(log => ({
+                id: log.id,
+                user_email: log.user_email,
+                action: log.action,
+                details: log.details
+            }))
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch activity logs'
+        });
     }
-
-    // Validate contact number
-    if (!/^\d{11}$/.test(contact_number)) {
-      return res.status(400).json({ success: false, message: 'Invalid contact number format' });
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Generate username from email
-    const username = email.split('@')[0];
-    
-    // Insert user into appropriate table based on account type
-    let result;
-    if (accountType === 'personal') { // Outsider
-      [result] = await db.query(
-        'INSERT INTO outsiders (username, email, password_hash, contact_number) VALUES (?, ?, ?, ?)',
-        [username, email, hashedPassword, contact_number]
-      );
-    } else { // Insider
-      // Validate additional required fields for insiders
-      if (!birthday || !age || !gender) {
-        return res.status(400).json({ success: false, message: 'Missing required fields for insider account' });
-      }
-      
-      [result] = await db.query(
-        'INSERT INTO insiders (username, email, password_hash, contact_number, birthday, age, gender) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [username, email, hashedPassword, contact_number, birthday, age, gender]
-      );
-    }
-    
-    res.status(201).json({
-      success: true,
-      message: 'User created successfully',
-      userId: result.insertId
-    });
-  } catch (error) {
-    console.error('Signup error:', error);
-    if (error.code === 'ER_DUP_ENTRY') {
-      res.status(400).json({ success: false, message: 'Email already exists' });
-    } else {
-      res.status(500).json({ success: false, message: 'Error creating user: ' + error.message });
-    }
-  }
 });
 
-// User login endpoint
-app.post('/api/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    // Check all tables for the user
-    const [admins] = await db.query('SELECT *, "admin" as user_type FROM admins WHERE email = ?', [email]);
-    const [outsiders] = await db.query('SELECT *, "outsider" as user_type FROM outsiders WHERE email = ?', [email]);
-    const [insiders] = await db.query('SELECT *, "insider" as user_type FROM insiders WHERE email = ?', [email]);
-    
-    const user = admins[0] || outsiders[0] || insiders[0];
-    
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+// Ban user endpoint
+app.post('/api/security/ban-user', async (req, res) => {
+    const { email, reason, bannedUntil, bannedBy } = req.body;
+
+    if (!email || !reason || !bannedBy) {
+        return res.status(400).json({
+            success: false,
+            message: 'Missing required fields'
+        });
     }
-    
-    // Compare password
-    const validPassword = await bcrypt.compare(password, user.password_hash);
-    
-    if (!validPassword) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+
+    try {
+        // Check if user is already banned
+        const [existingBan] = await db.promise().query(
+            'SELECT * FROM banned_users WHERE email = ? AND (banned_until IS NULL OR banned_until > NOW())',
+            [email]
+        );
+
+        if (existingBan.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'User is already banned'
+            });
+        }
+
+        // Insert ban record
+        await db.promise().query(
+            'INSERT INTO banned_users (email, reason, banned_until, banned_by) VALUES (?, ?, ?, ?)',
+            [email, reason, bannedUntil, bannedBy]
+        );
+
+        // Log the ban action
+        await db.promise().query(
+            'INSERT INTO activity_logs (user_email, action, details) VALUES (?, ?, ?)',
+            [email, 'USER_BANNED', `Banned by ${bannedBy}. Reason: ${reason}`]
+        );
+
+        res.json({
+            success: true,
+            message: 'User banned successfully'
+        });
+    } catch (error) {
+        console.error('Error banning user:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to ban user',
+            error: error.message
+        });
     }
-    
-    res.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role_id || user.user_type,
-        userType: user.user_type
-      }
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ success: false, message: 'Error during login' });
-  }
 });
 
-// Get all users (admin/superadmin only)
-app.get('/api/users', async (req, res) => {
-  try {
-    // Get users from all tables
-    const [admins] = await db.query(
-      'SELECT id, username, email, role_id as role, status, created_at, "admin" as user_type FROM admins'
-    );
-    
-    const [outsiders] = await db.query(
-      'SELECT id, username, email, contact_number, status, created_at, "outsider" as user_type FROM outsiders'
-    );
-    
-    const [insiders] = await db.query(
-      'SELECT id, username, email, contact_number, birthday, age, gender, status, created_at, "insider" as user_type FROM insiders'
-    );
-    
-    // Combine all users
-    const allUsers = [...admins, ...outsiders, ...insiders];
-    
-    res.json({ success: true, users: allUsers });
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ success: false, message: 'Error fetching users' });
-  }
-});
+// Unban user endpoint
+app.post('/api/security/unban-user', async (req, res) => {
+    const { email, unbannedBy } = req.body;
 
-// Delete user (admin/superadmin only)
-app.delete('/api/users/:type/:id', async (req, res) => {
-  try {
-    const { type, id } = req.params;
-    let table;
-    
-    switch (type) {
-      case 'admin':
-        table = 'admins';
-        break;
-      case 'outsider':
-        table = 'outsiders';
-        break;
-      case 'insider':
-        table = 'insiders';
-        break;
-      default:
-        return res.status(400).json({ success: false, message: 'Invalid user type' });
+    try {
+        await db.promise().query(
+            'DELETE FROM banned_users WHERE email = ?',
+            [email]
+        );
+
+        await db.promise().query(
+            'INSERT INTO activity_logs (user_email, action, details) VALUES (?, ?, ?)',
+            [email, 'USER_UNBANNED', `Unbanned by ${unbannedBy}`]
+        );
+
+        res.json({
+            success: true,
+            message: 'User unbanned successfully'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to unban user'
+        });
     }
-    
-    await db.query(`DELETE FROM ${table} WHERE id = ?`, [id]);
-    res.json({ success: true, message: 'User deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting user:', error);
-    res.status(500).json({ success: false, message: 'Error deleting user' });
-  }
 });
 
-// Update user (admin/superadmin only)
-app.put('/api/users/:type/:id', async (req, res) => {
-  try {
-    const { type, id } = req.params;
-    const { email, contact_number, birthday, age, gender, status } = req.body;
-    
-    let query;
-    let params;
-    
-    switch (type) {
-      case 'outsider':
-        query = 'UPDATE outsiders SET email = ?, contact_number = ?, status = ? WHERE id = ?';
-        params = [email, contact_number, status, id];
-        break;
-      case 'insider':
-        query = 'UPDATE insiders SET email = ?, contact_number = ?, birthday = ?, age = ?, gender = ?, status = ? WHERE id = ?';
-        params = [email, contact_number, birthday, age, gender, status, id];
-        break;
-      case 'admin':
-        query = 'UPDATE admins SET email = ?, status = ? WHERE id = ?';
-        params = [email, status, id];
-        break;
-      default:
-        return res.status(400).json({ success: false, message: 'Invalid user type' });
+// Logout endpoint
+app.post('/api/logout', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({
+            success: false,
+            message: 'Email is required to log the logout action'
+        });
     }
-    
-    await db.query(query, params);
-    res.json({ success: true, message: 'User updated successfully' });
-  } catch (error) {
-    console.error('Error updating user:', error);
-    res.status(500).json({ success: false, message: 'Error updating user' });
-  }
+
+    try {
+        await db.promise().query(
+            'INSERT INTO activity_logs (user_email, action, details) VALUES (?, ?, ?)',
+            [email, 'LOGOUT', 'User logged out successfully']
+        );
+
+        res.json({
+            success: true,
+            message: 'Logged out successfully'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to log logout action'
+        });
+    }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+// CSP Report endpoint
+app.post('/api/csp-report', (req, res) => {
+    res.status(204).end();
+});
+
+server.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on port ${port}`);
 });
