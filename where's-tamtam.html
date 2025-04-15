@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEU Roosevelt - Where's Tamtam?</title>
+    <link rel="stylesheet" href="where's-tamtam.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>Where's Tamtam?</h1>
+            <p>Hello I'm Tamtam!!!</p>
+        </div>
+
+        <div class="timer" id="timer">Time left: 30s</div>
+
+        <div class="target">
+            <img id="targetImage" src="tamtam.png" alt="Target Image">
+            <div style="display: none;" id="resultMessage"></div>
+        </div>
+        <div class="image-grid" id="imageGrid"></div>
+    </div>
+
+    <!-- Play Game Section (Modal Popup) -->
+    <div id="gameModal" class="game-modal">
+        <div class="modal-content">
+            <div id="playGameDiv" class="play-game">
+                <p>Click "Start Game" to find tamtam!</p> <!-- Added text above buttons -->
+                <button id="startGameBtn">Start Game</button><button id="howToPlayBtn">How to Play?</button>
+            </div>
+            <p id="resultMessage"></p> <!-- Display result message -->
+            <div id="playAgainDiv" class="play-again" style="display: none;">
+                <h2>Game Over!</h2>
+                <button id="playAgainBtn">Play Again</button><button id="exitGameBtn">Exit Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- How to Play Modal -->
+    <div id="howToPlayModal" class="how-to-play-modal">
+        <div class="modal-content">
+            <h3>How to Play?</h3>
+            <p style="color: #0b461b; font-size: 20px; font-family: 'Arial', sans-serif; line-height: 1;">Welcome to the <strong style="font-size: 22px;">"Where's Tamtam?"</strong> game! Ready for some fun? Your mission is simple:</p>
+
+            <ul style="color: #0b461b; font-family: 'Arial', sans-serif; font-size: 18px;">
+                <li><strong style="font-size: 20px;">Find Tamtam!</strong> Click the image of Tamtam within <strong style="font-size: 20px;">30 seconds</strong> to score points.</li><br>
+                <li>Each time you find Tamtam, you'll earn:
+                    <ul style="color: #0b461b; font-size: 18px;">
+                        <li><strong>+5 points</strong> to your score.</li>
+                        <li><strong>+5 seconds</strong> to your remaining time.</li>
+                    </ul>
+                    A new random image of Tamtam will appear after every <strong>correct or wrong</strong> click. Keep an eye out for Tamtam's sneaky hiding spots!
+                </li><br>
+                <li>If you click wrong, <strong style="font-size: 18px; color: #ff4500;">2 seconds</strong> will be deducted from your timer. Be careful!</li>
+                <li>If time runs out before you find Tamtam, the game ends. But don't worry, you can always <strong>play again</strong> and try to beat your score!</li>
+            </ul>
+            
+            <p style="color: #0b461b; font-size: 20px; font-family: 'Arial', sans-serif; line-height: 1;">Are you ready? The clock is ticking, and Tamtam is waiting for you! 🕒</p>                             
+            <button id="closeHowToPlayBtn">Close</button>
+        </div>        
+    </div>
+
+    <div id="scoreCorrectMessage" class="score-correct-message" style="display: none;"></div>
+    <div id="scoreWrongMessage" class="score-wrong-message" style="display: none;"></div>
+
+    <audio id="backgroundMusic" loop>
+        <source src="game.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script src="where's-tamtam.js"></script>
+</body>
+</html>
