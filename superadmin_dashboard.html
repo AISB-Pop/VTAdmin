@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="superadmin_dashboard.css">
     <!-- Add Chart.js for analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <!-- Add DataTables for better table management -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -45,23 +46,43 @@
                     <div class="stat-card">
                         <h3>Total Users</h3>
                         <p id="total-users">0</p>
+                        <small class="trend" id="users-trend"></small>
                     </div>
                     <div class="stat-card">
                         <h3>Active Sessions</h3>
                         <p id="active-sessions">0</p>
+                        <small>Average Duration: <span id="avg-session-duration">0m</span></small>
                     </div>
                     <div class="stat-card">
                         <h3>Today's Sales</h3>
                         <p id="today-sales">₱0</p>
+                        <small class="trend" id="sales-trend"></small>
                     </div>
                     <div class="stat-card">
                         <h3>Pending Orders</h3>
                         <p id="pending-orders">0</p>
+                        <small>Processing Time: <span id="avg-processing-time">0m</span></small>
                     </div>
                 </div>
                 <div class="charts-container">
-                    <canvas id="sales-chart"></canvas>
-                    <canvas id="users-chart"></canvas>
+                    <div class="chart-wrapper">
+                        <h3>Real-time Activity</h3>
+                        <canvas id="realtime-activity-chart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>User Sessions</h3>
+                        <canvas id="session-duration-chart"></canvas>
+                    </div>
+                </div>
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <h3>Monthly Sales</h3>
+                        <canvas id="sales-chart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>User Distribution</h3>
+                        <canvas id="users-chart"></canvas>
+                    </div>
                 </div>
             </section>
 
