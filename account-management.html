@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FEU Roosevelt - Manage Account</title>
+  <link rel="stylesheet" href="account-management.css">
+  <link rel="stylesheet" href="style.css"> <!-- Link to the CSS file -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- First Header (Just a div) -->
+  <div class="header1">
+    <div class="logo">
+      <a href="homepage_authorized-user.html"><img src="rooosevelt-logo1.png" alt="Logo"></a> <!-- Replace 'logo.png' with your actual logo image -->
+    </div>
+    <div class="icons">
+      <i class="fa-solid fa-magnifying-glass"></i> <!-- Search Icon -->
+      <i class="fa-brands fa-facebook-f"></i> <!-- Facebook Icon -->
+      <i class="fa-brands fa-twitter"></i> <!-- Twitter Icon -->
+      <i class="fa-solid fa-phone"></i> <!-- Contact Info Icon -->
+    </div>
+  </div>
+
+  <header>
+    <nav>
+      <ul>
+        <li><a href="homepage_authorized-user.html">Home</a></li>
+        <li class="dropdown">
+          <a href="#">Virtual Tour</a>
+          <div class="dropdown-content">
+            <a href="Cainta_VT.html">Cainta Campus</a>
+            <a href="Marikina_VT.html">Marikina Campus</a>
+          </div>
+        </li>
+        <li class="dropdown">
+          <a href="#">Events</a>
+          <div class="dropdown-content">
+            <a href="News.html">News</a>
+            <a href="Activities.html">Activities</a>
+          </div>
+        </li>
+        <li class="dropdown">
+          <a href="#">About FEUR <span style="font-size: 10px; opacity: 0.5;">▼</span></a>
+          <div class="dropdown-content">
+            <a style="font-size: 15.4px" href="Academic_projects.html">Academic Projects</a>
+            <a href="History.html">History</a>
+            <a href="School_calendar.html">School Calendar</a>
+            <a href="Programs.html">Programs</a>
+            <a href="https://3339763.app.netsuite.com/app/login/secure/privatelogin.nl?c=3339763&redirect=%2Fapp%2Fcommon%2Fcustom%2Fcustrecordentrylist.nl%3Frectype%3D285%26searchtype%3DCustom%26searchid%3D2145%26refresh%3D%26whence%3D%26whence%3D&whence=" target="_blank">Netsuite</a>
+          </div>
+        </li>
+        <li class="dropdown">
+          <a href="#" >TamTam <span style="font-size: 10px; opacity: 0.5;">▼</span></a>
+          <div class="dropdown-content">
+            <a style="font-size: 15.5px" href="where's-tamtam.html" target="_blank" onclick="window.open('where\'s-tamtam.html', 'wherestamtam', 'width=800,height=600,resizable=yes'); return false;">Where's TamTam?</a>
+            <a href="customize-tamtam.html">MYO TamTam</a>
+            <a href="prediction-tamtam.html">TamTam Predicts</a>
+          </div>
+        </li>
+        <li><a href="Merchandise.html">Merchandise</a></li>
+        <li class="dropdown">
+          <a href="#"><u>Account <span style="font-size: 8px; opacity: 0.5;">▼</span></u></a>
+          <div class="dropdown-content">
+            <a href="account-management.html">Manage Account</a>
+            <a href="javascript:void(0);" onclick="confirmLogout()">Logout</a>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+    <!-- Profile Section -->
+    <div class="profile-container">
+      <!-- Profile Image Upload -->
+      <div class="profile-picture">
+        <img id="profile-preview" src="user-solid.svg" alt="Profile Picture">
+        <input type="file" id="profile-image" accept="image/*">
+        <button class="save-button" onclick="saveProfile()">Save Changes</button>
+      </div>
+    </div>
+
+      <!-- Settings Section -->
+  <div class="settings-container">
+    <ul>
+      <li><a href="#" onclick="toggleForm('merchandise-form')">🛍️ My Merchandise</a></li>
+      <li><a href="#" onclick="toggleForm('tamtam-form')">🐯 My Tamtam</a></li>
+      <li><a href="#" onclick="toggleForm('settings-form')">⚙️ My Settings</a></li>
+    </ul>
+
+      <!-- Merchandise Form -->
+<div id="merchandise-form" class="form-container">
+  <h2>My Merchandise</h2>
+  <p>Manage your merchandise here.</p>
+</div>
+
+<!-- Tamtam Form -->
+<div id="tamtam-form" class="form-container">
+  <h2>My Tamtam</h2>
+  
+  <!-- Where's TamTam Section -->
+  <div class="tamtam-section">
+    <h3>Where's TamTam?</h3>
+    <div class="form-group">
+      <label for="tamtam-highscore">High Score:</label>
+      <div class="highscore-display">
+        <span id="tamtam-highscore">0</span> points
+      </div>
+      <p class="last-played">Last played: <span id="last-played-date">Never</span></p>
+    </div>
+  </div>
+
+  <!-- MYO TamTam Section -->
+  <div class="tamtam-section">
+    <h3>MYO TamTam</h3>
+    <div class="form-group">
+      <label for="tamtam-name">TamTam Name:</label>
+      <input type="text" id="tamtam-name" placeholder="Enter your TamTam's name">
+    </div>
+    <div class="form-group">
+      <label>Your TamTam Avatar:</label>
+      <div class="avatar-preview-container">
+        <img id="tamtam-preview" src="#" alt="TamTam Avatar" style="display: none; max-width: 200px; margin-top: 10px;">
+        <p id="no-avatar-message" style="display: block; color: #666;">No avatar created yet. Visit MYO TamTam to create one!</p>
+      </div>
+    </div>
+  </div>
+
+  <button class="save-button" onclick="saveTamTamSettings()">Save TamTam Settings</button>
+</div>
+
+<!-- Settings Form -->
+<div id="settings-form" class="form-container">
+  <h2>Settings</h2>
+  <div class="settings-section">
+    <h3>Personal Details</h3>
+    <div class="form-group">
+      <label for="user-email">Email Address:</label>
+      <input type="email" id="user-email" placeholder="Enter your email address">
+    </div>
+    <div class="form-group">
+      <label for="user-phone">Contact Number:</label>
+      <input type="tel" id="user-phone" placeholder="Enter your contact number">
+    </div>
+    <div class="form-group">
+      <label for="user-birthday">Birthday:</label>
+      <input type="date" id="user-birthday">
+    </div>
+    <button class="save-button" onclick="saveSettings()">Save Settings</button>
+  </div>
+</div>
+  </div>
+  
+  <!-- Popup message for confirmation -->
+  <div id="logout-confirmation" class="popup-container">
+    <div class="popup-content">
+      <p>Are you sure you want to log out?</p>
+      <button onclick="logoutConfirmed()">Yes</button>
+      <button onclick="closePopup()">No</button>
+    </div>
+  </div>
+
+  <!-- Popup message for errors -->
+  <div id="error-popup" class="popup-container">
+    <div class="popup-content">
+      <p id="error-message">An error has occurred!</p>
+      <button onclick="closePopup()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // Show the logout confirmation popup when logout is clicked
+    function confirmLogout() {
+      document.getElementById('logout-confirmation').style.display = 'flex';
+    }
+
+    // Handle when the user clicks "Yes" to confirm logout
+    function logoutConfirmed() {
+      alert("Logout successful");
+      window.location.href = "login-signup.html"; // Redirect to the login page
+    }
+
+    // Close the popups when "Cancel" or "Close" is clicked
+    function closePopup() {
+      document.getElementById('logout-confirmation').style.display = 'none';
+      document.getElementById('error-popup').style.display = 'none';
+    }
+
+    // Function to show error popup with a custom message
+    function showError(errorMessage) {
+      document.getElementById('error-message').textContent = errorMessage;
+      document.getElementById('error-popup').style.display = 'flex';
+    }
+
+        // Preview the uploaded image
+    document.getElementById('profile-image').addEventListener('change', function(event) {
+      const reader = new FileReader();
+      reader.onload = function() {
+        document.getElementById('profile-preview').src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    });
+
+    function saveProfile() {
+      const profileImage = document.getElementById('profile-preview');
+      const imageData = profileImage.src;
+      
+      // Save to localStorage
+      localStorage.setItem('userProfileImage', imageData);
+      
+      // Show success message
+      alert("Profile updated successfully!");
+    }
+
+    // Load profile image when page loads
+    window.addEventListener('load', function() {
+      const savedImage = localStorage.getItem('userProfileImage');
+      if (savedImage) {
+        document.getElementById('profile-preview').src = savedImage;
+      }
+    });
+
+    function toggleForm(formId) {
+    // Hide all forms first
+    document.getElementById('merchandise-form').style.display = 'none';
+    document.getElementById('tamtam-form').style.display = 'none';
+    document.getElementById('settings-form').style.display = 'none';
+
+    // Show the selected form
+    document.getElementById(formId).style.display = 'block';
+}
+
+function saveTamTamSettings() {
+  // Get form values
+  const name = document.getElementById('tamtam-name').value;
+  const highScore = document.getElementById('tamtam-highscore').textContent;
+  const lastPlayed = document.getElementById('last-played-date').textContent;
+
+  // Create settings object
+  const settings = {
+    myoName: name,
+    highScore: highScore,
+    lastPlayed: lastPlayed,
+    lastUpdated: new Date().toISOString()
+  };
+
+  // Save to localStorage for persistence
+  localStorage.setItem('tamtamSettings', JSON.stringify(settings));
+
+  alert('TamTam settings saved successfully!');
+}
+
+// Load saved TamTam settings when form is opened
+function loadTamTamSettings() {
+  const settings = JSON.parse(localStorage.getItem('tamtamSettings') || '{}');
+  const savedAvatar = localStorage.getItem('tamtamAvatar');
+
+  // Populate form fields
+  if (settings) {
+    document.getElementById('tamtam-name').value = settings.myoName || '';
+    document.getElementById('tamtam-highscore').textContent = settings.highScore || '0';
+    document.getElementById('last-played-date').textContent = settings.lastPlayed || 'Never';
+  }
+
+  // Load saved avatar
+  const preview = document.getElementById('tamtam-preview');
+  const noAvatarMessage = document.getElementById('no-avatar-message');
+  
+  if (savedAvatar) {
+    preview.src = savedAvatar;
+    preview.style.display = 'block';
+    noAvatarMessage.style.display = 'none';
+  } else {
+    preview.style.display = 'none';
+    noAvatarMessage.style.display = 'block';
+  }
+}
+
+// Function to update high score (called from Where's TamTam game)
+function updateHighScore(score) {
+  const currentHighScore = parseInt(document.getElementById('tamtam-highscore').textContent) || 0;
+  if (score > currentHighScore) {
+    document.getElementById('tamtam-highscore').textContent = score;
+    document.getElementById('last-played-date').textContent = new Date().toLocaleDateString();
+    saveTamTamSettings();
+  }
+}
+
+// Function to update avatar (called from MYO TamTam when Download Avatar is clicked)
+function updateAvatar(avatarData) {
+  localStorage.setItem('tamtamAvatar', avatarData);
+  const preview = document.getElementById('tamtam-preview');
+  const noAvatarMessage = document.getElementById('no-avatar-message');
+  
+  preview.src = avatarData;
+  preview.style.display = 'block';
+  noAvatarMessage.style.display = 'none';
+  saveTamTamSettings();
+}
+
+// Add event listener to load settings when TamTam form is shown
+document.querySelector('[onclick="toggleForm(\'tamtam-form\')"]').addEventListener('click', loadTamTamSettings);
+
+// Function to load settings
+function loadSettings() {
+  // Get user details from localStorage
+  const userDetails = JSON.parse(localStorage.getItem('userDetails') || '{}');
+  console.log('Loading user details:', userDetails);
+  
+  // Populate form fields with user details
+  if (userDetails) {
+    // Set email
+    document.getElementById('user-email').value = userDetails.email || '';
+    
+    // Set contact number
+    document.getElementById('user-phone').value = userDetails.contact_number || '';
+    
+    // Set birthday
+    if (userDetails.birthday) {
+      document.getElementById('user-birthday').value = userDetails.birthday;
+    }
+  }
+}
+
+// Load settings immediately when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Page loaded, loading settings...');
+  loadSettings();
+  // Show settings form by default
+  toggleForm('settings-form');
+});
+
+// Function to save settings
+function saveSettings() {
+  const email = document.getElementById('user-email').value;
+  const phone = document.getElementById('user-phone').value;
+  const birthday = document.getElementById('user-birthday').value;
+
+  // Get existing user details
+  const userDetails = JSON.parse(localStorage.getItem('userDetails') || '{}');
+  
+  // Update with new values
+  const updatedDetails = {
+    ...userDetails,
+    email: email,
+    contact_number: phone,
+    birthday: birthday
+  };
+
+  // Save to localStorage
+  localStorage.setItem('userDetails', JSON.stringify(updatedDetails));
+  
+  alert('Settings saved successfully!');
+}
+  </script>
+
+</body>
+</html>
