@@ -311,6 +311,50 @@ const createTables = async () => {
             )
         `);
 
+        // Create admins table
+        await db.promise().query(`
+            CREATE TABLE IF NOT EXISTS admins (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password_hash VARCHAR(255) NOT NULL,
+                role VARCHAR(20) DEFAULT 'admin',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Create superadmins table
+        await db.promise().query(`
+            CREATE TABLE IF NOT EXISTS superadmins (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password_hash VARCHAR(255) NOT NULL,
+                role VARCHAR(20) DEFAULT 'superadmin',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Initialize admin accounts if they don't exist
+        const [existingAdmins] = await db.promise().query('SELECT * FROM admins');
+        if (existingAdmins.length === 0) {
+            const adminPassword = await bcrypt.hash('admin123', 10);
+            await db.promise().query(
+                'INSERT INTO admins (email, password_hash) VALUES (?, ?)',
+                ['admin@feuroosevelt.edu.ph', adminPassword]
+            );
+            console.log('Admin account created');
+        }
+
+        // Initialize superadmin account if it doesn't exist
+        const [existingSuperadmins] = await db.promise().query('SELECT * FROM superadmins');
+        if (existingSuperadmins.length === 0) {
+            const superadminPassword = await bcrypt.hash('superadmin123', 10);
+            await db.promise().query(
+                'INSERT INTO superadmins (email, password_hash) VALUES (?, ?)',
+                ['superadmin@feuroosevelt.edu.ph', superadminPassword]
+            );
+            console.log('Superadmin account created');
+        }
+
         // Create login_attempts table
         await db.promise().query(`
             CREATE TABLE IF NOT EXISTS login_attempts (
@@ -370,7 +414,7 @@ async function logLoginAttempt(status, email, ipAddress, userAgent) {
 // Enhanced login endpoint
 app.post('/api/login', async (req, res) => {
     try {
-        console.log('Login attempt received');
+        console.log('\n=== Login Attempt ===');
         console.log('Request body:', req.body);
         
         if (!req.body || typeof req.body !== 'object') {
@@ -391,15 +435,67 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        console.log('Checking user existence...');
-        const [outsiders] = await db.promise().query('SELECT * FROM outsiders WHERE email = ?', [email]);
-        const [insiders] = await db.promise().query('SELECT * FROM insiders WHERE email = ?', [email]);
+        console.log('Searching for user:', email);
         
-        const users = [...outsiders, ...insiders];
-        console.log('User search results:', users.length);
+        // Check insiders table first (since we know this is where the account is)
+        const [insiders] = await db.promise().query('SELECT * FROM insiders WHERE email = ?', [email]);
+        console.log('Insider search result:', insiders.length > 0 ? 'Found' : 'Not found');
+        
+        if (insiders.length > 0) {
+            const user = insiders[0];
+            console.log('Found user:', {
+                id: user.id,
+                email: user.email,
+                role: user.role
+            });
+            
+            const validPassword = await bcrypt.compare(password, user.password_hash);
+            console.log('Password verification:', validPassword ? 'Success' : 'Failed');
+            
+            if (validPassword) {
+                const token = jwt.sign(
+                    { 
+                        id: user.id, 
+                        email: user.email, 
+                        role: user.role || 'outsider'
+                    },
+                    JWT_SECRET,
+                    { expiresIn: '24h' }
+                );
+                
+                console.log('Login successful');
+                return res.json({ 
+                    success: true,
+                    token,
+                    user: {
+                        id: user.id,
+                        email: user.email,
+                        role: user.role || 'outsider',
+                        contact_number: user.contact_number,
+                        birthday: user.birthday,
+                        age: user.age,
+                        gender: user.gender,
+                        name: user.name
+                    }
+                });
+            }
+        }
+
+        // If not found in insiders, check other tables
+        const [outsiders] = await db.promise().query('SELECT * FROM outsiders WHERE email = ?', [email]);
+        const [admins] = await db.promise().query('SELECT * FROM admins WHERE email = ?', [email]);
+        const [superadmins] = await db.promise().query('SELECT * FROM superadmins WHERE email = ?', [email]);
+        
+        console.log('Other tables search results:', {
+            outsiders: outsiders.length,
+            admins: admins.length,
+            superadmins: superadmins.length
+        });
+        
+        const users = [...outsiders, ...admins, ...superadmins];
         
         if (users.length === 0) {
-            console.log('User not found:', email);
+            console.log('User not found in any table');
             return res.status(401).json({ 
                 success: false,
                 error: 'Invalid email or password' 
@@ -407,19 +503,23 @@ app.post('/api/login', async (req, res) => {
         }
 
         const user = users[0];
-        console.log('User found, verifying password...');
+        console.log('Found user in other tables:', {
+            id: user.id,
+            email: user.email,
+            role: user.role
+        });
+        
         const validPassword = await bcrypt.compare(password, user.password_hash);
+        console.log('Password verification:', validPassword ? 'Success' : 'Failed');
         
         if (!validPassword) {
-            console.log('Invalid password for user:', email);
+            console.log('Invalid password');
             return res.status(401).json({ 
                 success: false,
                 error: 'Invalid email or password' 
             });
         }
 
-        // Generate JWT token
-        console.log('Generating JWT token...');
         const token = jwt.sign(
             { 
                 id: user.id, 
@@ -430,24 +530,20 @@ app.post('/api/login', async (req, res) => {
             { expiresIn: '24h' }
         );
 
-        // Prepare user data
-        const userData = {
-            id: user.id,
-            email: user.email,
-            role: user.role || 'outsider',
-            contact_number: user.contact_number,
-            birthday: user.birthday,
-            age: user.age,
-            gender: user.gender,
-            name: user.name
-        };
-
-        console.log('Login successful for user:', email);
-        
+        console.log('Login successful');
         res.json({ 
             success: true,
             token,
-            user: userData
+            user: {
+                id: user.id,
+                email: user.email,
+                role: user.role || 'outsider',
+                contact_number: user.contact_number,
+                birthday: user.birthday,
+                age: user.age,
+                gender: user.gender,
+                name: user.name
+            }
         });
     } catch (error) {
         console.error('Login error:', error);
@@ -1005,6 +1101,173 @@ app.post('/api/test-decrypt', async (req, res) => {
         });
     }
 });
+
+// Test endpoint to verify login credentials
+app.post('/api/test-login', async (req, res) => {
+    try {
+        console.log('\n=== Test Login ===');
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({ 
+                success: false,
+                error: 'Email and password are required' 
+            });
+        }
+
+        console.log('Testing login for:', email);
+        
+        // Check superadmins first
+        const [superadmins] = await db.promise().query(
+            'SELECT * FROM superadmins WHERE email = ?', 
+            [email]
+        );
+        
+        if (superadmins.length > 0) {
+            const admin = superadmins[0];
+            const validPassword = await bcrypt.compare(password, admin.password_hash);
+            
+            console.log('Superadmin check:', {
+                found: true,
+                email: admin.email,
+                password_valid: validPassword
+            });
+            
+            if (validPassword) {
+                return res.json({ 
+                    success: true,
+                    message: 'Superadmin login successful',
+                    user: {
+                        id: admin.id,
+                        email: admin.email,
+                        role: admin.role
+                    }
+                });
+            }
+        }
+
+        // Check other tables
+        const [admins] = await db.promise().query(
+            'SELECT * FROM admins WHERE email = ?', 
+            [email]
+        );
+        
+        if (admins.length > 0) {
+            const admin = admins[0];
+            const validPassword = await bcrypt.compare(password, admin.password_hash);
+            
+            console.log('Admin check:', {
+                found: true,
+                email: admin.email,
+                password_valid: validPassword
+            });
+            
+            if (validPassword) {
+                return res.json({ 
+                    success: true,
+                    message: 'Admin login successful',
+                    user: {
+                        id: admin.id,
+                        email: admin.email,
+                        role: admin.role
+                    }
+                });
+            }
+        }
+
+        console.log('No matching user found');
+        res.status(401).json({ 
+            success: false,
+            error: 'Invalid credentials' 
+        });
+    } catch (error) {
+        console.error('Test login error:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Test login failed',
+            details: error.message
+        });
+    }
+});
+
+// Function to verify database state
+async function verifyDatabaseState() {
+    try {
+        console.log('\n=== Database State Verification ===');
+        
+        // Check insiders table for the specific account
+        const [insiders] = await db.promise().query(
+            'SELECT * FROM insiders WHERE email = ?', 
+            ['r2022022411@feuroosevelt.edu.ph']
+        );
+        
+        if (insiders.length > 0) {
+            console.log('\nFound insider account:', {
+                id: insiders[0].id,
+                email: insiders[0].email,
+                role: insiders[0].role
+            });
+            
+            // Update the role to superadmin
+            await db.promise().query(
+                'UPDATE insiders SET role = ? WHERE email = ?',
+                ['superadmin', 'r2022022411@feuroosevelt.edu.ph']
+            );
+            console.log('Updated insider role to superadmin');
+            
+            // Update password if needed
+            const validPassword = await bcrypt.compare('superadmin123', insiders[0].password_hash);
+            if (!validPassword) {
+                console.log('Updating password...');
+                const newHashedPassword = await bcrypt.hash('superadmin123', 10);
+                await db.promise().query(
+                    'UPDATE insiders SET password_hash = ? WHERE email = ?',
+                    [newHashedPassword, 'r2022022411@feuroosevelt.edu.ph']
+                );
+                console.log('Password updated');
+            }
+        }
+
+        // Check superadmins table
+        const [superadmins] = await db.promise().query('SELECT * FROM superadmins');
+        console.log('\nSuperadmins table:');
+        if (superadmins.length > 0) {
+            superadmins.forEach(admin => {
+                console.log({
+                    id: admin.id,
+                    email: admin.email,
+                    role: admin.role,
+                    created_at: admin.created_at
+                });
+            });
+        } else {
+            console.log('No superadmins found');
+        }
+
+        // Check admins table
+        const [admins] = await db.promise().query('SELECT * FROM admins');
+        console.log('\nAdmins table:');
+        if (admins.length > 0) {
+            admins.forEach(admin => {
+                console.log({
+                    id: admin.id,
+                    email: admin.email,
+                    role: admin.role,
+                    created_at: admin.created_at
+                });
+            });
+        } else {
+            console.log('No admins found');
+        }
+
+        console.log('\nDatabase verification complete\n');
+    } catch (error) {
+        console.error('Error verifying database:', error);
+    }
+}
+
+// Call the function when server starts
+verifyDatabaseState();
 
 // Error handling middleware
 app.use((err, req, res, next) => {
