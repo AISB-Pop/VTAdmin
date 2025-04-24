@@ -142,6 +142,7 @@ async function handleLoginSubmit() {
                     redirectUrl = 'homepage_authorized-user.html';
                     break;
                 case 'admin':
+                case 'superadmin':
                     redirectUrl = 'superadmin_dashboard.html';
                     break;
                 default:
