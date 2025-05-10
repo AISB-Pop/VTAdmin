@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FEU Roosevelt</title>
+  <link rel="stylesheet" href="style.css"> <!-- Link to the CSS file -->
+  <!-- Font Awesome CDN for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+  <!-- First Header (Just a div) -->
+  <div class="header1">
+    <div class="logo">
+      <a href="homepage.html"><img src="rooosevelt-logo1.png" alt="Logo"></a> <!-- Replace 'logo.png' with your actual logo image -->
+    </div>
+    <div class="icons">
+      <i class="fa-solid fa-magnifying-glass"></i> <!-- Search Icon -->
+      <i class="fa-brands fa-facebook-f"></i> <!-- Facebook Icon -->
+      <i class="fa-brands fa-twitter"></i> <!-- Close (X) Icon -->
+      <i class="fa-solid fa-phone"></i> <!-- Contact Info Icon -->
+    </div>
+  </div>
+
+  <!-- Navigation Header -->
+  <header>
+    <nav>
+      <ul>
+        <li><a href="homepage.html">Home</a></li>
+        <li class="dropdown">
+          <a href="#">Virtual Tour <span style="font-size: 8px; opacity: 0.5;">▼</span></a>
+          <div class="dropdown-content">
+            <a href="Cainta_VT.html">Cainta Campus</a>
+            <a href="Marikina_VT.html">Marikina Campus</a>
+          </div>
+        </li>
+        <li class="dropdown">
+          <a href="#">Events <span style="font-size: 8px; opacity: 0.5;">▼</span></a>
+          <div class="dropdown-content">
+            <a href="News.html">News</a>
+            <a href="Activities.html">Activities</a>
+          </div>
+        </li>
+        <li class="dropdown">
+          <a href="#">Academic Projects <span style="font-size: 8px; opacity: 0.5;">▼</span></a>
+          <div class="dropdown-content">
+            <a href="Capstone.html">Capstone</a>
+            <a href="Researches.html">Researches</a>
+            <a href="Thesis.html">Thesis</a>
+          </div>
+        </li>
+        <li class="dropdown">
+          <a href="#">About FEUR <span style="font-size: 8px; opacity: 0.5;">▼</span></a>
+          <div class="dropdown-content">
+            <a href="History.html">History</a>
+            <a href="School_calendar.html">School Calendar</a>
+            <a href="Programs.html">Programs</a>
+            <a href="https://feuroosevelt.edu.ph/admission-procedures/">Enrollment</a>
+          </div>
+        </li>
+        <li><a href="Merchandise.html"><u>Merchandise</a></u></li>
+        <li class="dropdown">
+          <a href="login-signup.html">Login</a>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Shirt Customizer Section -->
+  <div class="shirt-customizer">
+    <h1>Customize Your Shirt</h1>
+    <div class="customizer">
+      <div class="switch-arrow-left" onclick="switchShirtView()">
+        <i class="fas fa-chevron-left"></i> <!-- Left Arrow Icon -->
+      </div>
+      <div class="preview-container" id="previewContainer">
+        <div class="preview" id="front" style="background-image: url('shirt-front.png'); z-index: 2;"></div>
+        <div class="preview" id="back" style="background-image: url('shirt-back.png'); z-index: 1; transform: translateX(100%);"></div>
+      </div>
+      <div class="switch-arrow-right" onclick="switchShirtView()">
+        <i class="fas fa-chevron-right"></i> <!-- Right Arrow Icon -->
+      </div>
+      <div class="stickers-container">
+        <img src="sticker1.png" class="sticker-option" onclick="addSticker('sticker1.png')">
+        <img src="sticker2.png" class="sticker-option" onclick="addSticker('sticker2.png')">
+        <img src="sticker3.png" class="sticker-option" onclick="addSticker('sticker3.png')">
+        <img src="sticker1.png" class="sticker-option" onclick="addSticker('sticker4.png')">
+        <img src="sticker2.png" class="sticker-option" onclick="addSticker('sticker5.png')">
+        <img src="sticker3.png" class="sticker-option" onclick="addSticker('sticker5.png')">
+        <img src="sticker1.png" class="sticker-option" onclick="addSticker('sticker5.png')">
+        <img src="sticker2.png" class="sticker-option" onclick="addSticker('sticker5.png')">
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-columns">
+        <div class="footer-column">
+          <p>FEU ROOSEVELT CAINTA</p>
+          <p>35 D Sumulong Hwy, Cainta, 1900 Rizal</p>
+          <p>Tel No: +632 8681-6210</p>
+          <p>CP No.: 0960-558-1885</p>
+        </div>
+        <div class="footer-column">
+          <p>FEU ROOSEVELT MARIKINA</p>
+          <p>J.P. Rizal St., Lamuan, Marikina City</p>
+          <p>Tel No: +632 8941-4093</p>
+          <p>CP No.: 0960-558-1889</p>
+        </div>
+      </div>
+      <div class="footer-image">
+        <img src="QR_fb.png" alt="FEU Logo">
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>Copyright © 2025. All Rights Reserved, INNOV8</p>
+    </div>
+  </footer>
+
+  <!-- JavaScript for Shirt Customizer -->
+  <script>
+    let isFrontView = true;
+
+    function switchShirtView() {
+      const front = document.getElementById("front");
+      const back = document.getElementById("back");
+
+      if (isFrontView) {
+        front.style.transform = "translateX(-100%)"; // Move front view out
+        back.style.transform = "translateX(0)"; // Move back view in
+      } else {
+        front.style.transform = "translateX(0)"; // Move front view in
+        back.style.transform = "translateX(100%)"; // Move back view out
+      }
+
+      isFrontView = !isFrontView; // Toggle the view state
+    }
+
+    function addSticker(stickerSrc) {
+      const sticker = document.createElement("div");
+      sticker.classList.add("sticker");
+      sticker.style.left = "110px";
+      sticker.style.top = "110px";
+      sticker.style.width = "80px";
+      sticker.style.height = "80px";
+      sticker.style.backgroundImage = `url(${stickerSrc})`;
+      sticker.style.backgroundSize = "cover";
+
+      const resizeHandle = document.createElement("div");
+      resizeHandle.classList.add("resize-handle");
+      sticker.appendChild(resizeHandle);
+
+      const deleteButton = document.createElement("div");
+      deleteButton.classList.add("delete-button");
+      deleteButton.innerText = "X";
+      deleteButton.onclick = () => sticker.remove();
+      sticker.appendChild(deleteButton);
+
+      sticker.onclick = function (event) {
+        event.stopPropagation();
+        document.querySelectorAll(".sticker").forEach(el => el.classList.remove("selected"));
+        sticker.classList.add("selected");
+      };
+
+      // Resize functionality
+      resizeHandle.onmousedown = function (event) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        const startWidth = sticker.offsetWidth;
+        const startHeight = sticker.offsetHeight;
+        const startX = event.clientX;
+        const startY = event.clientY;
+
+        function resizeMove(e) {
+          const newWidth = startWidth + (e.clientX - startX);
+          const newHeight = startHeight + (e.clientY - startY);
+
+          // Set minimum and maximum size limits
+          if (newWidth > 50 && newWidth < 300) {
+            sticker.style.width = `${newWidth}px`;
+          }
+          if (newHeight > 50 && newHeight < 300) {
+            sticker.style.height = `${newHeight}px`;
+          }
+        }
+
+        function stopResize() {
+          document.removeEventListener("mousemove", resizeMove);
+          document.removeEventListener("mouseup", stopResize);
+        }
+
+        document.addEventListener("mousemove", resizeMove);
+        document.addEventListener("mouseup", stopResize);
+      };
+
+      // Drag functionality
+      sticker.onmousedown = function (event) {
+        event.preventDefault();
+
+        const shiftX = event.clientX - sticker.getBoundingClientRect().left;
+        const shiftY = event.clientY - sticker.getBoundingClientRect().top;
+
+        function moveSticker(e) {
+          const containerRect = document.getElementById("previewContainer").getBoundingClientRect();
+          let newX = e.clientX - shiftX - containerRect.left;
+          let newY = e.clientY - shiftY - containerRect.top;
+
+          // Ensure the sticker stays within the container bounds
+          if (newX < 0) newX = 0;
+          if (newY < 0) newY = 0;
+          if (newX + sticker.offsetWidth > containerRect.width) newX = containerRect.width - sticker.offsetWidth;
+          if (newY + sticker.offsetHeight > containerRect.height) newY = containerRect.height - sticker.offsetHeight;
+
+          sticker.style.left = `${newX}px`;
+          sticker.style.top = `${newY}px`;
+        }
+
+        function stopMoving() {
+          document.removeEventListener("mousemove", moveSticker);
+          document.removeEventListener("mouseup", stopMoving);
+        }
+
+        document.addEventListener("mousemove", moveSticker);
+        document.addEventListener("mouseup", stopMoving);
+      };
+
+      const preview = isFrontView ? document.getElementById("front") : document.getElementById("back");
+      preview.appendChild(sticker);
+    }
+
+    document.addEventListener("click", function (event) {
+      const previewContainer = document.getElementById("previewContainer");
+      if (!previewContainer.contains(event.target)) {
+        document.querySelectorAll(".sticker").forEach(el => el.classList.remove("selected"));
+      }
+    });
+  </script>
+</body>
+</html>

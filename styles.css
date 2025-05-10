@@ -1,0 +1,694 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+
+}
+
+body {
+  font-family: Arial, sans-serif;
+}
+
+/* First Header */
+.header1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff; /* Fixed invalid color */
+  padding: 5px 20px;
+  min-height: 45px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  margin-left: 80px;
+}
+
+.logo img {
+  height: auto;
+  width: 250px;
+
+}
+
+.icons {
+  display: flex;
+  align-items: center;
+  color: #819386;
+  margin-right: 90px;
+}
+
+.icons i {
+  font-size: 13px;
+  cursor: pointer;
+  padding-right: 40px;
+}
+
+/* Second Header (Menu) */
+.header2 {
+  background-color: #0a3f19;
+  padding: 10px 0;
+}
+
+.header2 .menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+header {
+  background-color: #0b461b; /* Green header */
+  padding: 10px 0;
+}
+
+nav ul {
+  display: flex;
+  justify-content: center;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+nav ul li {
+  margin: 0 15px;
+}
+
+nav ul li a {
+  color: white;
+  text-decoration: none;
+  padding: 10px 15px;
+  display: block;
+  opacity: 0.6;
+  
+}
+
+nav ul li a.selected {
+  text-decoration: underline;
+  font-weight: bold;  /* Optional: Make the text bold */
+}
+
+
+/* Dropdown styles */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white; /* White dropdown */
+  min-width: 160px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black; /* Black text for dropdown items */
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f1f1; /* Light gray on hover */
+  
+}
+
+/* Show the dropdown when hovering over the button */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+
+.three-dots {
+  cursor: pointer;
+  font-size: 18px;
+  padding: 5px;
+  color: white;
+}
+
+.three-dots:hover + .dropdown-menu {
+  display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header1 {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 10px;
+  }
+
+  .icons {
+      margin-top: 10px;
+      justify-content: space-between;
+      width: 50%;
+  }
+
+  .header2 .menu {
+      flex-direction: column;
+      gap: 15px;
+  }
+
+  .header2 .menu a {
+      padding: 8px 15px;
+  }
+}
+
+.VT{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff; /* Fixed invalid color */
+  padding: 5px 20px;
+  min-height: 450px;
+  max-width: 1000px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);    
+  margin-top: 50px;
+  margin-left: 170px;
+  border-radius: 50px;
+}
+.divider{
+  width: 1357px;
+  height: 3px; 
+  border: 8px solid #0a3f19;
+
+}
+
+/* Make the button with the link */
+.Cainta_btn {
+  background-color: #eaa321;
+  border-radius: 70px;
+  width: 155px;
+  height: 35px; 
+  margin-left: 580px;
+  margin-bottom: -50px;  /* Adjust this value to move it upwards */
+  position: relative;
+  top: -20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Cainta_btn a {
+  padding: 0 15px;
+  color: white; /* Make the link white */
+  text-decoration: none; /* Remove underline */
+}
+
+.Cainta_btn a:hover {
+  color: #f0f0f0; /* Optional: change the color when hovering */
+}
+
+
+/* STYLES SPECIFIC TO FOOTER  */
+.footer {
+background-color: #002100;
+color: white;
+opacity: 95%;
+padding: 20px;
+margin-top: 50px;
+}
+
+.footer-container {
+display: flex;
+justify-content: space-between;
+align-items: flex-start;
+max-width: 1200px;
+margin: auto;
+flex-wrap: wrap;
+}
+
+.footer-columns {
+display: flex;
+gap: 80px; /* Increased gap since there are only 2 columns */
+padding-left: 50px; /* Moves the columns more to the left */
+flex-grow: 1;
+}
+
+.footer-column {
+text-align: left;
+min-width: 250px;
+}
+
+.footer-column p {
+margin: 5px 0;
+font-size: 14px;
+color: rgb(236, 234, 234);
+}
+
+.footer-image img {
+max-width: 200px; /* Adjust the size of your image */
+height: auto;
+margin-right: 50px; /* Adds space from the right */
+}
+
+.footer-bottom {
+text-align: left;
+font-size: 12px;
+opacity: 0.8;
+margin-top: 20px; /* Creates space between the columns and the copyright text */
+padding-left: 110px;
+}
+.footer-bottom p{
+color: rgb(184, 181, 181);
+}
+/*end of footer*/
+
+/* Styling for the popup */
+.popup-container {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+justify-content: center;
+align-items: center;
+z-index: 1000;
+}
+
+.popup-content {
+background-color: white;
+padding: 20px;
+border-radius: 8px;
+text-align: center;
+width: 300px;
+}
+
+.popup-content p {
+margin: 10px 0;
+}
+
+.popup-content button {
+padding: 10px 20px;
+margin: 10px;
+cursor: pointer;
+}
+
+
+/*merchandise*/
+.container {
+position: relative;
+}
+
+.container .card {
+position: relative;
+width: 320px;
+height: 550px;
+background: #092d13;
+border-radius: 20px;
+overflow: hidden;
+
+}
+
+.container .card:before {
+content: "";
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: #eaa321;
+clip-path: circle(150px at 80% 20%);
+transition: 0.5s ease-in-out;
+}
+
+.container .card:hover:before {
+clip-path: circle(300px at 80% -20%);
+}
+
+.container .card:after {
+content: "FEUR FEUR FEUR FEUR";
+position: absolute;
+left: -5%;
+bottom: 0.5px;
+font-size: 8.2em;
+font-weight: 700;
+font-style: italic;
+color: rgba(255, 255, 255, 0.04);
+
+}
+
+.container .card .imgBx {
+position: absolute;
+top: 50%;
+transform: translateY(-60%);
+z-index: 1000;
+width: 100%;
+height: 100%;
+transition: .5s;
+}
+
+.container .card:hover .imgBx {
+top: 0%;
+transform: translateY(-25%);
+/* bug  */
+}
+
+.container .card .imgBx img {
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%) rotate(-10deg);
+width: 290px;
+height: auto;
+}
+
+.container .card .contentBx {
+position: absolute;
+bottom: 0;
+width: 100%;
+height: 100px;
+text-align: center;
+transition: 1s;
+z-index: 90;
+}
+
+.container .card:hover .contentBx {
+height: 210px;
+}
+
+.container .card .contentBx h2 {
+position: relative;
+font-weight: 600;
+letter-spacing: 1px;
+color: #fff;
+margin-top: -30px;
+}
+
+.container .card .contentBx .size,
+.container .card .contentBx .color {
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 8px 20px;
+transition: .5s;
+opacity: 0;
+visibility: hidden;
+}
+
+.container .card:hover .contentBx .size {
+opacity: 1;
+visibility: visible;
+transition-delay: .5s;
+}
+
+.container .card:hover .contentBx .color {
+opacity: 1;
+visibility: visible;
+transition-delay: .6s;
+}
+
+.container .card .contentBx .size h3,
+.container .card .contentBx .color h3 {
+color: white;
+font-weight: 300;
+font-size: 14px;
+text-transform: uppercase;
+letter-spacing: 2px;
+margin-right: 10px;
+}
+
+.container .card .contentBx .size span {
+width: 26px;
+height: 26px;
+text-align: center;
+line-height: 26px;
+font-size: 14px;
+display: inline-block;
+color: #111;
+background: #fff;
+margin: 0 5px;
+transition: .5s;
+color: #111;
+border-radius: 4px;
+cursor: pointer;
+}
+
+.container .card .contentBx .size span:hover {  /* other bug */
+background: #B90000;
+}
+
+.container .card .contentBx .color span {
+width: 20px;
+height: 20px;
+background: #ff0;
+border-radius: 50%;
+margin: 0 5px;
+cursor: pointer;
+}
+
+.container .card .contentBx .color span:nth-child(2) {
+ background: #eaa321;
+ outline: 1px solid rgb(33, 32, 13); }
+
+.container .card .contentBx .color span:nth-child(3) {
+ background: #092d13;
+ outline: 1px solid #ffffff; 
+}
+
+.container .card .contentBx .color span:nth-child(4) {
+ background: black;
+ outline: 1px solid #ffffff; 
+}
+
+.container .card .contentBx a {
+display: inline-block;
+padding: 10px 20px;
+background: #fff;
+border-radius: 4px;
+margin-top: 10px;
+text-decoration: none;
+font-weight: 600;
+color: #111;
+opacity: 0;
+transform: translateY(50px);
+transition: .5s;
+}
+
+.container .card:hover .contentBx a {
+opacity: 1;
+transform: translateY(0px);
+transition-delay: .7s;
+} 
+.row{
+column-count: 3;
+margin-top: 50px;
+margin-left: 60px;
+column-gap: 60px;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+:root {
+	--vs-primary: 29 92 255;
+}
+
+/*Dialog Styles*/
+dialog {
+	padding: 1rem 3rem;
+	background: white;
+	max-width: 400px;
+	padding-top: 2rem;
+	border-radius: 20px;
+	border: 0;
+	box-shadow: 0 5px 30px 0 rgb(0 0 0 / 10%);
+	animation: fadeIn 1s ease both;
+  margin-top: 350px;
+  margin-left:550px;
+  overflow: hidden;
+    scrollbar-width: none; /* Hide scrollbar in Firefox */
+    overflow-y: hidden;
+    width: fit-content; /* Ensures the dialog only takes needed space */
+    outline: none;
+	&::backdrop {
+		animation: fadeIn 1s ease both;
+		background: rgb(255 255 255 / 40%);
+		z-index: 2;
+		backdrop-filter: blur(20px);
+
+	}
+}
+
+  dialog::-webkit-scrollbar {
+    display: none; /* Hide scrollbar in Chrome, Safari */
+  }
+  dialog::backdrop {
+    overflow: hidden; /* Ensures no scrollbars on the backdrop */
+  }
+  
+	.x {
+		filter: grayscale(1);
+		border: none;
+		background: white;
+		position: absolute;
+		top: 15px;
+		right: 10px;
+		transition: ease filter, transform 0.3s;
+		cursor: pointer;
+		transform-origin: center;
+    
+		&:hover {
+			filter: grayscale(0);
+			transform: scale(1.1);
+		}
+	}
+	h2 {
+		font-weight: 600;
+		font-size: 2rem;
+		padding-bottom: 1rem;
+	}
+	p {
+		font-size: 1rem;
+		line-height: 1.3rem;
+		padding: 0.5rem 0;
+    color:black;
+		a {
+			&:visited {
+				color: rgb(var(--vs-primary));
+			}
+		}
+	}
+
+button.primary {
+	display: inline-block;
+	font-size: 0.8rem;
+	color: black !important;
+	background: rgb(var(--vs-primary) / 100%);
+	padding: 13px 25px;
+	border-radius: 17px;
+	transition: background-color 0.1s ease;
+	box-sizing: border-box;
+  transform: translateY(50px);
+  transition: .5s;	border: 0;
+	cursor: pointer;
+  background: white; /* Red */
+  margin-top: -20px;
+}
+
+/* Center the logo */
+.logo_ {
+  display: block;
+  width: 20px; /* Adjust size */
+  height: auto;
+  margin-top: -10px;
+  margin-left: -30px; /* Center and add space below */
+}
+
+.button-container1 {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 15px;
+}
+.merch_notif p{
+  font-size: 12px;
+  margin-top: -30px;
+  margin-right: 150px;
+}
+
+/* Secondary button styling */
+button.secondary {
+  background: #0a3f19;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button.secondary:hover {
+  background: #092d13;
+}
+.subtext {
+  text-align: center;
+  font-size: 1rem;
+  margin-top: 10px;
+  color: #666; /* Adjust color */
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/*end of merchandise*/
+
+/*school Calendar*/
+
+.SC2 {
+font-weight: 800;
+margin: 1rem 0 0;
+margin-left: 600px;
+color: #347255;
+}
+.SC3{
+margin: 1rem 0 0;
+margin-left: 550px;
+color: #347255;
+margin-top: 40px;
+}
+.SC_BG{
+background-color: #eaa321;
+margin-top: -30px;
+height: 70px;
+}
+.hr1{
+border: 5px solid #092d13;
+border-radius: 1px;
+margin-bottom: 30px;
+}
+.SC {
+display: grid;
+grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+flex-wrap: wrap;
+list-style: none;
+}
+
+.S_C {
+  display: flex;
+  width: 7.5rem;
+  height: 7.5rem;
+  margin: 0.25rem;
+  flex-flow: column;
+  border-radius: 0.2rem;
+  padding: 1rem;
+  font-weight: 300;
+  font-size: 0.8rem;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  margin-left: 40px;
+  margin-top: 20px;
+}
+
+  time {
+    font-size: 1.2rem;
+    margin: 0 0 1rem 0;
+    font-weight: 500;
+  }
+
+.today {
+  time {
+    font-weight: 800;
+  }
+  background: #ffffff70;
+}
+
+
+/*end of School Calendar*/

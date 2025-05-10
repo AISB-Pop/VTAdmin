@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make Your Own TamTam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            user-select: none;
+        }
+
+        /* First Header */
+        .header1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 5px 20px;
+            min-height: 45px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-left: 80px;
+        }
+
+        .logo img {
+            height: auto;
+            width: 250px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .icons {
+            display: flex;
+            align-items: center;
+            color: #819386;
+            margin-right: 20px;
+        }
+
+        .icons i {
+            font-size: 13px;
+            cursor: pointer;
+            padding-right: 20px;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .hamburger i {
+            font-size: 24px;
+            color: #0b461b;
+        }
+
+        /* Second Header (Menu) */
+        header {
+            background-color: #0b461b;
+            padding: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            display: block;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        nav ul li a:hover {
+            opacity: 1;
+        }
+
+        nav ul li a.selected {
+            text-decoration: underline;
+            font-weight: bold;
+            opacity: 1;
+        }
+
+        /* Dropdown styles */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            border-radius: 4px;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            opacity: 0.8;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+            opacity: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .three-dots {
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+            color: white;
+        }
+
+        /* Dashboard Mode Styles - Right Side */
+        .dashboard-mode {
+            position: fixed;
+            top: 0;
+            right: -300px; /* Start off-screen to the right */
+            width: 280px;
+            height: 100vh;
+            background-color: #0b461b;
+            z-index: 99;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            padding-top: 60px;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2); /* Shadow on left side */
+        }
+
+        .dashboard-mode.active {
+            right: 0; /* Slide in from right */
+        }
+
+        .dashboard-mode nav ul {
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .dashboard-mode nav ul li {
+            margin: 5px 0;
+        }
+
+        .dashboard-mode nav ul li a {
+            padding: 12px 15px;
+            border-radius: 4px;
+        }
+
+        .dashboard-mode nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .dashboard-mode .dropdown-content {
+            position: static;
+            display: none;
+            width: 100%;
+            box-shadow: none;
+            background-color: rgba(0, 0, 0, 0.1);
+            margin-top: 5px;
+        }
+
+        .dashboard-mode .dropdown-content a {
+            color: white;
+            padding-left: 30px;
+        }
+
+        .dashboard-mode .dropdown-content a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .dashboard-mode .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 98;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: calc(100vh - 300px);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .creator {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Game Area */
+        .game-area {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            min-height: calc(100vh - 300px);
+            padding: 20px;
+            align-items: flex-start;
+        }
+
+        .avatar-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 0;
+        }
+
+        .avatar-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 1/1;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .avatar-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .avatar-background {
+            z-index: 0;
+        }
+
+        .avatar-decoration {
+            z-index: 0.5;
+        }
+
+        .avatar-legs {
+            z-index: 1;
+        }
+
+        .avatar-arms {
+            z-index: 2;
+        }
+
+        .avatar-head {
+            z-index: 3;
+        }
+
+        .avatar-top {
+            z-index: 4;
+        }
+
+        .avatar-bottom {
+            z-index: 5;
+        }
+
+        .avatar-shoes {
+            z-index: 6;
+        }
+
+        .avatar-accessory {
+            z-index: 7;
+        }
+
+        .decoration-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .category-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid #ff7eb9;
+            color: #ff7eb9;
+            font-weight: bold;
+        }
+
+        .tab:hover:not(.active) {
+            border-bottom: 2px solid #ddd;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .item {
+            width: 80px;
+            height: 80px;
+            background-color: #fff;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .item.selected {
+            border-color: #ff7eb9;
+        }
+
+        .item img {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .none-item {
+            background-color: #f0f0f0;
+            color: #999;
+            font-size: 12px;
+            text-align: center;
+            padding: 5px;
+        }
+
+        .download-btn {
+            background-color: #ff7eb9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            align-self: center;
+            transition: background-color 0.2s;
+        }
+
+        .download-btn:hover {
+            background-color: #ff5fa3;
+        }
+
+        /* Layer Panel */
+        .layer-panel {
+            flex: 1;
+            min-width: 250px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .layer-panel h3 {
+            margin-bottom: 15px;
+            text-align: center;
+            color: #ff7eb9;
+        }
+
+        .layer-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            position: relative;
+            min-height: 300px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            cursor: grab;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            touch-action: none;
+        }
+
+        .layer-item:active {
+            cursor: grabbing;
+        }
+
+        .layer-item.active {
+            border-left: 4px solid #ff7eb9;
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .layer-item.dragging {
+            opacity: 0.8;
+            background-color: #f0f0f0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            transform: scale(1.03);
+        }
+
+        .layer-handle {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.5;
+            cursor: grab;
+        }
+
+        .layer-item:hover .layer-handle {
+            opacity: 0.8;
+        }
+
+        .layer-visibility {
+            margin-right: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .layer-name {
+            flex: 1;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .layer-z-index {
+            font-size: 12px;
+            color: #999;
+            margin-left: 10px;
+        }
+
+        .drop-indicator {
+            height: 3px;
+            background-color: #ff7eb9;
+            margin: 5px 0;
+            border-radius: 3px;
+            display: none;
+            position: absolute;
+            left: 15px;
+            right: 15px;
+            z-index: 10;
+        }
+
+        .drop-indicator.visible {
+            display: block;
+        }
+
+        .placeholder {
+            background-color: rgba(255, 126, 185, 0.1);
+            border: 1px dashed #ff7eb9;
+            margin-bottom: 8px;
+            border-radius: 6px;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #002100;
+            color: white;
+            opacity: 95%;
+            padding: 20px;
+            margin-top: 50px;
+        }
+
+        .footer-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            max-width: 1200px;
+            margin: auto;
+            flex-wrap: wrap;
+        }
+
+        .footer-columns {
+            display: flex;
+            gap: 80px;
+            padding-left: 50px;
+            flex-grow: 1;
+        }
+
+        .footer-column {
+            text-align: left;
+            min-width: 250px;
+        }
+
+        .footer-column p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: rgb(236, 234, 234);
+        }
+
+        .footer-image img {
+            max-width: 200px;
+            height: auto;
+            margin-right: 50px;
+        }
+
+        .footer-bottom {
+            text-align: left;
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 20px;
+            padding-left: 110px;
+        }
+        .footer-bottom p {
+            color: rgb(184, 181, 181);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .logo {
+                margin-left: 20px;
+            }
+            
+            .icons {
+                margin-right: 20px;
+            }
+            
+            .icons i {
+                padding-right: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header1 {
+                padding: 10px;
+            }
+            
+            .logo {
+                margin-left: 0;
+            }
+            
+            .logo img {
+                width: 200px;
+            }
+            
+            .icons {
+                margin-right: 0;
+            }
+            
+            .icons i {
+                padding-right: 15px;
+                font-size: 12px;
+            }
+            
+            /* Show hamburger menu */
+            .hamburger {
+                display: block;
+                order: 1; /* Move to the end of flex container */
+            }
+            
+            /* Hide regular navigation */
+            header nav {
+                display: none;
+            }
+            
+            /* Show dashboard navigation */
+            .dashboard-mode {
+                display: block;
+            }
+            
+            /* Adjust game area for mobile */
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .avatar-container {
+                max-width: 300px;
+            }
+            
+            .layer-panel {
+                width: 100%;
+                order: -1;
+                position: static;
+            }
+            
+            .items-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            }
+            
+            .item {
+                width: 70px;
+                height: 70px;
+            }
+            
+            .category-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+
+            .footer-columns {
+                flex-direction: column;
+                gap: 20px;
+                padding-left: 20px;
+            }
+
+            .footer-image {
+                margin-top: 20px;
+                margin-right: 0;
+                text-align: center;
+            }
+
+            .footer-bottom {
+                padding-left: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header1 {
+                flex-direction: row;
+                align-items: center;
+                padding: 10px 15px;
+            }
+            
+            .logo {
+                width: auto;
+                justify-content: flex-start;
+                margin-bottom: 0;
+                margin-right: auto;
+            }
+            
+            .header-right {
+                margin-left: auto;
+            }
+            
+            .icons {
+                display: none; /* Hide icons on very small screens */
+            }
+            
+            .logo img {
+                width: 180px;
+            }
+            
+            .hamburger {
+                margin-right: 0;
+                padding: 5px;
+            }
+            
+            .dashboard-mode {
+                width: 260px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header1">
+        <div class="logo">
+          <a href="homepage_authorized-user.html"><img src="rooosevelt-logo1.png" alt="Logo"></a>
+        </div>
+        <div class="header-right">
+            <div class="icons">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <i class="fa-brands fa-facebook-f"></i>
+              <i class="fa-brands fa-twitter"></i>
+              <i class="fa-solid fa-phone"></i>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dashboard Navigation - Right Side -->
+    <div class="dashboard-mode" id="dashboard">
+      <nav>
+        <ul>
+            <li><a href="homepage_authorized-user.html"><u>Home</a></u></li>
+            <li class="dropdown">
+              <a href="#">Virtual Tour <span style="font-size: 8px; opacity: 0.5;">▼</span></a>
+              <div class="dropdown-content">
+                <a href="Cainta_VT.html">Cainta Campus</a>
+                <a href="Marikina_VT.html">Marikina Campus</a>
+              </div>
+            </li>
+            <li class="dropdown">
+              <a href="#">Events <span style="font-size: 8px; opacity: 0.5;">▼</span></a>
+              <div class="dropdown-content">
+                <a href="News.html">News</a>
+                <a href="Activities.html">Activities</a>
+              </div>
+            </li>
+            <li class="dropdown">
+              <a href="#">About FEUR <span style="font-size: 10px; opacity: 0.5;">▼</span></a>
+              <div class="dropdown-content">
+                <a style="font-size: 15.4px" href="Academic_projects.html">Academic Projects</a>
+                <a href="History.html">History</a>
+                <a href="School_calendar.html">School Calendar</a>
+                <a href="Programs.html">Programs</a>
+                <a href="https://3339763.app.netsuite.com/app/login/secure/privatelogin.nl?c=3339763&redirect=%2Fapp%2Fcommon%2Fcustom%2Fcustrecordentrylist.nl%3Frectype%3D285%26searchtype%3DCustom%26searchid%3D2145%26refresh%3D%26whence%3D%26whence%3D&whence=" target="_blank">Netsuite</a>
+              </div>
+            </li>
+            <li class="dropdown">
+              <a href="#" >TamTam <span style="font-size: 10px; opacity: 0.5;">▼</span></a>
+              <div class="dropdown-content">
+                <a style="font-size: 15.5px" href="where's-tamtam.html" target="_blank">Where's TamTam?</a>
+                <a href="customize-tamtam.html">MYO TamTam</a>
+                <a href="prediction-tamtam.html">TamTam Predicts</a>
+              </div>
+            </li>
+            <li><a href="Merchandise.html">Merchandise</a></li>
+            <li class="dropdown">
+              <a href="#">Account <span style="font-size: 8px; opacity: 0.5;">▼</span></a>
+              <div class="dropdown-content">
+                <a href="account-management.html">Manage Account</a>
+                <a href="javascript:void(0);" onclick="confirmLogout()">Logout</a>
+              </div>
+            </li>
+          </ul>
+      </nav>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- Regular Navigation (hidden on mobile) -->
+    <header>
+      <nav>
+        <ul>
+            <li><a href="homepage_authorized-user.html">Home</a></li>
+            <li class="dropdown">
+              <a href="#">Virtual Tour <span style="font-size: 8px; opacity: 0.5;">▼</span></a>
+              <div class="dropdown-content">
+                <a href="Cainta_VT.html">Cainta Campus</a>
+                <a href="Marikina_VT.html">Marikina Campus</a>
+              </div>
+            </li>
+            <li class="dropdown">
+              <a href="#">Events <span style="font-size: 8px; opacity: 0.5;">▼</span></a>
+              <div class="dropdown-content">
+                <a href="News.html">News</a>
+                <a href="Activities.html">Activities</a>
+              </div>
+            </li>
+            <li class="dropdown">
+              <a href="#">About FEUR <span style="font-size: 10px; opacity: 0.5;">▼</span></a>
+              <div class="dropdown-content">
+                <a style="font-size: 15.4px" href="Academic_projects.html">Academic Projects</a>
+                <a href="History.html">History</a>
+                <a href="School_calendar.html">School Calendar</a>
+                <a href="Programs.html">Programs</a>
+                <a href="https://3339763.app.netsuite.com/app/login/secure/privatelogin.nl?c=3339763&redirect=%2Fapp%2Fcommon%2Fcustom%2Fcustrecordentrylist.nl%3Frectype%3D285%26searchtype%3DCustom%26searchid%3D2145%26refresh%3D%26whence%3D%26whence%3D&whence=" target="_blank">Netsuite</a>
+              </div>
+            </li>
+            <li class="dropdown">
+              <a href="#" ><u>TamTam <span style="font-size: 10px; opacity: 0.5;">▼</span></u></a>
+              <div class="dropdown-content">
+                <a style="font-size: 15.5px" href="where's-tamtam.html" target="_blank">Where's TamTam?</a>
+                <a href="customize-tamtam.html">MYO TamTam</a>
+                <a href="prediction-tamtam.html">TamTam Predicts</a>
+              </div>
+            </li>
+            <li><a href="Merchandise.html">Merchandise</a></li>
+            <li class="dropdown">
+              <a href="#">Account <span style="font-size: 8px; opacity: 0.5;">▼</span></a>
+              <div class="dropdown-content">
+                <a href="account-management.html">Manage Account</a>
+                <a href="javascript:void(0);" onclick="confirmLogout()">Logout</a>
+              </div>
+            </li>
+          </ul>
+      </nav>
+    </header>
+    
+    <div class="container">
+        
+        <div class="game-area">
+            <div class="avatar-section">
+                <div class="avatar-container">
+                    <div class="avatar-layer avatar-background" id="background-layer"></div>
+                    <div class="avatar-layer avatar-decoration" id="decoration-layer"></div>
+                    <div class="avatar-layer avatar-legs" id="legs-layer">
+                        <img src="legs.png" alt="Legs" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <div class="avatar-layer avatar-arms" id="arms-layer">
+                        <img src="hands.png" alt="Arms" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <div class="avatar-layer avatar-head" id="head-layer">
+                        <img src="head.png" alt="Head" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <div class="avatar-layer avatar-top" id="top-layer"></div>
+                    <div class="avatar-layer avatar-bottom" id="bottom-layer"></div>
+                    <div class="avatar-layer avatar-shoes" id="shoes-layer"></div>
+                    <div class="avatar-layer avatar-accessory" id="accessory-layer"></div>
+                </div>
+                
+                <div class="controls">
+                    <div class="category-tabs">
+                        <div class="tab active" data-category="top">Top</div>
+                        <div class="tab" data-category="bottom">Bottom</div>
+                        <div class="tab" data-category="shoes">Shoes</div>
+                        <div class="tab" data-category="accessory">Accessory</div>
+                        <div class="tab" data-category="background">Background</div>
+                        <div class="tab" data-category="decoration">Decoration</div>
+                    </div>
+                    
+                    <div class="items-container">
+                        <div class="items-grid" id="top-items">
+                            <div class="item none-item" data-item="none">None</div>
+                        </div>
+                        <div class="items-grid" id="bottom-items" style="display: none;">
+                            <div class="item none-item" data-item="none">None</div>
+                        </div>
+                        <div class="items-grid" id="shoes-items" style="display: none;">
+                            <div class="item none-item" data-item="none">None</div>
+                        </div>
+                        <div class="items-grid" id="accessory-items" style="display: none;">
+                            <div class="item none-item" data-item="none">None</div>
+                        </div>
+                        <div class="items-grid" id="background-items" style="display: none;">
+                            <div class="item none-item" data-item="none">None</div>
+                        </div>
+                        <div class="items-grid" id="decoration-items" style="display: none;">
+                            <div class="item none-item" data-item="none">None</div>
+                        </div>
+                    </div>
+                    
+                    <button class="download-btn" id="download-btn">Download Avatar</button>
+                </div>
+            </div>
+            
+            <div class="layer-panel">
+                <h3>Layer Management</h3>
+                <div class="layer-list" id="layer-list">
+                    <!-- Layer items will be added here dynamically -->
+                </div>
+                <div class="drop-indicator"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-columns">
+                <div class="footer-column">
+                    <p>FEU ROOSEVELT CAINTA</p>
+                    <p>35 D Sumulong Hwy, Cainta, 1900 Rizal</p>
+                    <p>Tel No: +632 8681-6210</p>
+                    <p>CP No.: 0960-558-1885</p>
+                </div>
+                <div class="footer-column">
+                    <p>FEU ROOSEVELT MARIKINA</p>
+                    <p>J.P. Rizal St., Lamuan, Marikina City</p>
+                    <p>Tel No: +632 8941-4093</p>
+                    <p>CP No.: 0960-558-1889</p>
+                </div>
+            </div>
+            <div class="footer-image">
+                <img src="QR_fb.png" alt="FEU Logo">
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>Copyright © 2025. All Rights Reserved, INNOV8</p>
+        </div>
+    </footer>
+    
+    <script src="custom.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dashboard toggle functionality
+            const hamburger = document.getElementById('hamburger');
+            const dashboard = document.getElementById('dashboard');
+            const overlay = document.getElementById('overlay');
+            
+            hamburger.addEventListener('click', function() {
+                dashboard.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+            
+            overlay.addEventListener('click', function() {
+                dashboard.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+            
+            // Close dashboard when clicking on a link (for single page applications)
+            const navLinks = document.querySelectorAll('.dashboard-mode a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    dashboard.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            });
+            
+            // Sample items data - replace with your actual PNG file paths
+            const itemsData = {
+                top: [
+                    { id: 'top1', name: 'T-Shirt', color: '#ff7eb9', image: 'top1.png' },
+                    { id: 'top2', name: 'Blouse', color: '#7afcff', image: 'top2.png' },
+                    { id: 'top3', name: 'Sweater', color: '#fff740', image: 'top3.png' },
+                ],
+                bottom: [
+                    { id: 'bottom1', name: 'Jeans', color: '#6a5acd', image: 'bottom1.png' },
+                    { id: 'bottom2', name: 'Skirt', color: '#ff65a3', image: 'bottom2.png' },
+                    { id: 'bottom3', name: 'Shorts', color: '#7e1e9c', image: 'bottom3.png' }
+                ],
+                shoes: [
+                    { id: 'shoes2', name: 'Boots', color: '#653700', image: 'shoes2.png' },
+                    { id: 'shoes3', name: 'Sandals', color: '#ffd1df', image: 'shoes3.png' }
+                ],
+                accessory: [
+                    { id: 'acc2', name: 'Hat', color: '#ff0000', image: 'acc2.png' },
+                    { id: 'acc3', name: 'Necklace', color: '#ffd700', image: 'acc3.png' }
+                ],
+                background: [
+                    { id: 'bg1', name: 'Pink', color: '#ffcce6', image: '' },
+                    { id: 'bg2', name: 'Blue', color: '#cce6ff', image: '' },
+                    { id: 'bg3', name: 'Green', color: '#ccffcc', image: '' },
+                    { id: 'bg4', name: 'Yellow', color: '#ffffcc', image: '' }
+                ],
+                decoration: [
+                    { id: 'dec1', name: 'Red Circle', color: '#ff0000' },
+                    { id: 'dec2', name: 'Blue Circle', color: '#0000ff' },
+                    { id: 'dec3', name: 'Green Circle', color: '#00ff00' },
+                    { id: 'dec4', name: 'Purple Circle', color: '#800080' },
+                    { id: 'dec5', name: 'Gold Circle', color: '#ffd700' }
+                ]
+            };
+            
+            // Layer configuration - includes body parts but not selectable in controls
+            const layerConfig = [
+                { id: 'background', name: 'Background', element: null, visible: true, zIndex: 0 },
+                { id: 'decoration', name: 'Decoration', element: null, visible: true, zIndex: 0.5 },
+                { id: 'legs', name: 'Legs', element: null, visible: true, zIndex: 1 },
+                { id: 'arms', name: 'Arms', element: null, visible: true, zIndex: 2 },
+                { id: 'head', name: 'Head', element: null, visible: true, zIndex: 3 },
+                { id: 'top', name: 'Top', element: null, visible: true, zIndex: 4 },
+                { id: 'bottom', name: 'Bottom', element: null, visible: true, zIndex: 5 },
+                { id: 'shoes', name: 'Shoes', element: null, visible: true, zIndex: 6 },
+                { id: 'accessory', name: 'Accessory', element: null, visible: true, zIndex: 7 }
+            ];
+            
+            // Current selections (no body parts in selections)
+            let currentSelections = {
+                top: null,
+                bottom: null,
+                shoes: null,
+                accessory: null,
+                background: 'bg1',
+                decoration: null
+            };
+            
+            // DOM elements
+            const tabs = document.querySelectorAll('.tab');
+            const itemsContainers = {
+                top: document.getElementById('top-items'),
+                bottom: document.getElementById('bottom-items'),
+                shoes: document.getElementById('shoes-items'),
+                accessory: document.getElementById('accessory-items'),
+                background: document.getElementById('background-items'),
+                decoration: document.getElementById('decoration-items')
+            };
+            
+            const layers = {
+                head: document.getElementById('head-layer'),
+                arms: document.getElementById('arms-layer'),
+                legs: document.getElementById('legs-layer'),
+                top: document.getElementById('top-layer'),
+                bottom: document.getElementById('bottom-layer'),
+                shoes: document.getElementById('shoes-layer'),
+                accessory: document.getElementById('accessory-layer'),
+                background: document.getElementById('background-layer'),
+                decoration: document.getElementById('decoration-layer')
+            };
+            
+            const downloadBtn = document.getElementById('download-btn');
+            const layerList = document.getElementById('layer-list');
+            const dropIndicator = document.querySelector('.drop-indicator');
+            
+            // Drag state variables
+            let draggedItem = null;
+            let placeholder = null;
+            let dragOffsetY = 0;
+            let isDragging = false;
+            
+            // Initialize the game
+            function initGame() {
+                // Initialize layer elements in config
+                layerConfig.forEach(layer => {
+                    layer.element = layers[layer.id];
+                    layer.element.style.zIndex = layer.zIndex;
+                });
+                
+                // Populate layer panel
+                updateLayerPanel();
+                
+                // Populate items for each category
+                for (const category in itemsData) {
+                    const container = itemsContainers[category];
+                    
+                    // Clear the "None" item if there are other items
+                    if (itemsData[category].length > 0) {
+                        container.innerHTML = '<div class="item none-item" data-item="none">None</div>';
+                    }
+                    
+                    // Add items to the container
+                    itemsData[category].forEach(item => {
+                        const itemElement = document.createElement('div');
+                        itemElement.className = 'item';
+                        itemElement.dataset.item = item.id;
+                        
+                        if (category === 'background' || category === 'decoration') {
+                            // For backgrounds and decorations, show a color swatch
+                            itemElement.innerHTML = `
+                                <div style="width: 100%; height: 100%; background-color: ${item.color}; border-radius: 2px;"></div>
+                            `;
+                        } else {
+                            // For other items, show the image (replace with your actual image path)
+                            itemElement.innerHTML = `
+                                <img src="${item.image}" alt="${item.name}" style="max-width: 90%; max-height: 90%;">
+                            `;
+                        }
+                        
+                        container.appendChild(itemElement);
+                    });
+                }
+                
+                // Set default background
+                setBackground(currentSelections.background);
+                
+                // Update selections UI
+                for (const category in currentSelections) {
+                    if (currentSelections[category]) {
+                        updateSelectedItems(category);
+                    }
+                }
+            }
+            
+            // Update layer panel
+            function updateLayerPanel() {
+                layerList.innerHTML = '';
+                
+                // Sort layers by z-index (reverse order for display)
+                const sortedLayers = [...layerConfig].sort((a, b) => b.zIndex - a.zIndex);
+                
+                sortedLayers.forEach(layer => {
+                    const layerItem = document.createElement('div');
+                    layerItem.className = 'layer-item';
+                    layerItem.dataset.layerId = layer.id;
+                    
+                    // Highlight active layer if it matches the current tab
+                    const activeTab = document.querySelector('.tab.active');
+                    if (activeTab && activeTab.dataset.category === layer.id) {
+                        layerItem.classList.add('active');
+                    }
+                    
+                    layerItem.innerHTML = `
+                        <div class="layer-handle"></div>
+                        <div class="layer-visibility" data-visible="${layer.visible}">
+                            ${layer.visible ? '👁️' : '👁️‍🗨️'}
+                        </div>
+                        <div class="layer-name">${layer.name}</div>
+                        <div class="layer-z-index">${layer.zIndex}</div>
+                    `;
+                    
+                    layerList.appendChild(layerItem);
+                    
+                    // Add click event to select layer
+                    layerItem.addEventListener('click', function(e) {
+                        if (e.target.classList.contains('layer-visibility')) return;
+                        
+                        // Find and click the corresponding tab (only for controllable layers)
+                        if (['top', 'bottom', 'shoes', 'accessory', 'background', 'decoration'].includes(layer.id)) {
+                            const tab = document.querySelector(`.tab[data-category="${layer.id}"]`);
+                            if (tab) tab.click();
+                        }
+                    });
+                    
+                    // Add visibility toggle
+                    const visibilityToggle = layerItem.querySelector('.layer-visibility');
+                    visibilityToggle.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        layer.visible = !layer.visible;
+                        layer.element.style.display = layer.visible ? 'block' : 'none';
+                        this.dataset.visible = layer.visible;
+                        this.innerHTML = layer.visible ? '👁️' : '👁️‍🗨️';
+                    });
+                    
+                    // Add drag events
+                    setupDragEvents(layerItem);
+                });
+            }
+            
+            // Setup drag events for a layer item
+            function setupDragEvents(item) {
+                item.addEventListener('mousedown', startDrag);
+                item.addEventListener('touchstart', startDrag, { passive: false });
+                
+                // Prevent text selection while dragging
+                item.addEventListener('selectstart', (e) => {
+                    if (isDragging) e.preventDefault();
+                });
+            }
+            
+            // Start drag operation
+            function startDrag(e) {
+                // Only start drag if not clicking on visibility toggle
+                if (e.target.classList.contains('layer-visibility')) return;
+                
+                // Prevent default for touch events
+                if (e.type === 'touchstart') e.preventDefault();
+                
+                draggedItem = this;
+                isDragging = true;
+                
+                // Get initial position
+                const rect = this.getBoundingClientRect();
+                dragOffsetY = (e.clientY || e.touches[0].clientY) - rect.top;
+                
+                // Create placeholder
+                placeholder = document.createElement('div');
+                placeholder.className = 'placeholder';
+                placeholder.style.height = `${rect.height}px`;
+                this.parentNode.insertBefore(placeholder, this);
+                
+                // Style the dragged item
+                this.classList.add('dragging');
+                this.style.position = 'fixed';
+                this.style.width = `${rect.width}px`;
+                this.style.top = `${rect.top}px`;
+                this.style.left = `${rect.left}px`;
+                this.style.zIndex = '1000';
+                this.style.pointerEvents = 'none';
+                this.style.cursor = 'grabbing';
+                document.body.appendChild(this);
+                
+                // Add event listeners for the drag operation
+                document.addEventListener('mousemove', dragMove);
+                document.addEventListener('touchmove', dragMove, { passive: false });
+                document.addEventListener('mouseup', endDrag);
+                document.addEventListener('touchend', endDrag);
+            }
+            
+            // Handle drag movement
+            function dragMove(e) {
+                if (!isDragging) return;
+                
+                e.preventDefault();
+                
+                // Get current mouse/touch position
+                const clientY = e.clientY || e.touches[0].clientY;
+                
+                // Update dragged item position
+                draggedItem.style.top = `${clientY - dragOffsetY}px`;
+                
+                // Update drop indicator
+                updateDropIndicator(clientY);
+            }
+            
+            // Update drop indicator position
+            function updateDropIndicator(clientY) {
+                const layerItems = Array.from(layerList.querySelectorAll('.layer-item:not(.dragging)'));
+                let closestItem = null;
+                let closestDistance = Infinity;
+                let position = 'below';
+                
+                for (const item of layerItems) {
+                    const rect = item.getBoundingClientRect();
+                    const center = rect.top + rect.height / 2;
+                    const distance = Math.abs(clientY - center);
+                    
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestItem = item;
+                        position = clientY < center ? 'above' : 'below';
+                    }
+                }
+                
+                if (closestItem) {
+                    dropIndicator.classList.add('visible');
+                    
+                    const rect = closestItem.getBoundingClientRect();
+                    if (position === 'above') {
+                        dropIndicator.style.top = `${rect.top - layerList.getBoundingClientRect().top - 2}px`;
+                    } else {
+                        dropIndicator.style.top = `${rect.bottom - layerList.getBoundingClientRect().top - 2}px`;
+                    }
+                }
+            }
+            
+            // End drag operation
+            function endDrag() {
+                if (!isDragging) return;
+                
+                // Remove placeholder
+                if (placeholder && placeholder.parentNode) {
+                    placeholder.parentNode.removeChild(placeholder);
+                }
+                
+                // Move the dragged item to its new position
+                const layerItems = Array.from(layerList.querySelectorAll('.layer-item:not(.dragging)'));
+                const clientY = draggedItem.getBoundingClientRect().top + dragOffsetY;
+                let insertBeforeItem = null;
+                
+                for (const item of layerItems) {
+                    const rect = item.getBoundingClientRect();
+                    if (clientY < rect.top + rect.height / 2) {
+                        insertBeforeItem = item;
+                        break;
+                    }
+                }
+                
+                // Insert the dragged item in its new position
+                if (insertBeforeItem) {
+                    layerList.insertBefore(draggedItem, insertBeforeItem);
+                } else {
+                    layerList.appendChild(draggedItem);
+                }
+                
+                // Reset dragged item styles
+                resetDraggedItem();
+                
+                // Update z-indexes based on new order
+                updateLayerOrder();
+                
+                // Clean up
+                cleanupDrag();
+            }
+            
+            // Reset dragged item styles
+            function resetDraggedItem() {
+                draggedItem.classList.remove('dragging');
+                draggedItem.style.position = '';
+                draggedItem.style.top = '';
+                draggedItem.style.left = '';
+                draggedItem.style.width = '';
+                draggedItem.style.zIndex = '';
+                draggedItem.style.pointerEvents = '';
+                draggedItem.style.cursor = '';
+                draggedItem.style.boxShadow = '';
+            }
+            
+            // Update layer order based on DOM position
+            function updateLayerOrder() {
+                const updatedItems = Array.from(layerList.querySelectorAll('.layer-item')).reverse();
+                updatedItems.forEach((item, index) => {
+                    const layerId = item.dataset.layerId;
+                    const layer = layerConfig.find(l => l.id === layerId);
+                    if (layer) {
+                        layer.zIndex = index;
+                        layer.element.style.zIndex = index;
+                    }
+                });
+            }
+            
+            // Clean up drag operation
+            function cleanupDrag() {
+                // Hide drop indicator
+                dropIndicator.classList.remove('visible');
+                
+                // Remove event listeners
+                document.removeEventListener('mousemove', dragMove);
+                document.removeEventListener('touchmove', dragMove);
+                document.removeEventListener('mouseup', endDrag);
+                document.removeEventListener('touchend', endDrag);
+                
+                // Reset drag state
+                draggedItem = null;
+                placeholder = null;
+                isDragging = false;
+                
+                // Update the panel to ensure proper event handlers
+                updateLayerPanel();
+            }
+            
+            // Tab switching
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show the corresponding items container
+                    const category = this.dataset.category;
+                    for (const container in itemsContainers) {
+                        itemsContainers[container].style.display = 'none';
+                    }
+                    itemsContainers[category].style.display = 'grid';
+                    
+                    // Update active layer in panel
+                    updateLayerPanel();
+                });
+            });
+            
+            // Item selection
+            for (const category in itemsContainers) {
+                itemsContainers[category].addEventListener('click', function(e) {
+                    const itemElement = e.target.closest('.item');
+                    if (!itemElement) return;
+                    
+                    const itemId = itemElement.dataset.item;
+                    
+                    // Update selection
+                    if (itemId === 'none') {
+                        currentSelections[category] = null;
+                    } else {
+                        currentSelections[category] = itemId;
+                    }
+                    
+                    // Update UI
+                    updateSelectedItems(category);
+                    
+                    // Apply the selection to the avatar
+                    applySelection(category, itemId);
+                });
+            }
+            
+            // Update selected items UI
+            function updateSelectedItems(category) {
+                const items = itemsContainers[category].querySelectorAll('.item');
+                
+                items.forEach(item => {
+                    item.classList.remove('selected');
+                    
+                    if (item.dataset.item === currentSelections[category]) {
+                        item.classList.add('selected');
+                    } else if (currentSelections[category] === null && item.dataset.item === 'none') {
+                        item.classList.add('selected');
+                    }
+                });
+            }
+            
+            // Apply selection to avatar
+            function applySelection(category, itemId) {
+                switch(category) {
+                    case 'background':
+                        setBackground(itemId);
+                        break;
+                    case 'decoration':
+                        setDecoration(itemId);
+                        break;
+                    default:
+                        // For other categories (top, bottom, shoes, accessory)
+                        layers[category].innerHTML = '';
+                        
+                        if (itemId && itemId !== 'none') {
+                            // Find the item data
+                            const itemData = itemsData[category].find(item => item.id === itemId);
+                            
+                            if (itemData) {
+                                // Add the item image to the layer (replace with your actual image path)
+                                layers[category].innerHTML = `
+                                    <img src="${itemData.image}" alt="${itemData.name}" style="width: 100%; height: 100%; object-fit: contain;">
+                                `;
+                            }
+                        }
+                }
+            }
+            
+            // Set background
+            function setBackground(bgId) {
+                if (bgId === 'none') {
+                    layers.background.style.backgroundColor = '#ffffff';
+                    return;
+                }
+                
+                const bgData = itemsData.background.find(bg => bg.id === bgId);
+                if (bgData) {
+                    layers.background.style.backgroundColor = bgData.color;
+                }
+                
+                currentSelections.background = bgId;
+                updateSelectedItems('background');
+            }
+            
+            // Set decoration
+            function setDecoration(decId) {
+                layers.decoration.innerHTML = '';
+                
+                if (decId && decId !== 'none') {
+                    const decData = itemsData.decoration.find(dec => dec.id === decId);
+                    if (decData) {
+                        const circle = document.createElement('div');
+                        circle.className = 'decoration-circle';
+                        circle.style.backgroundColor = decData.color;
+                        layers.decoration.appendChild(circle);
+                    }
+                }
+                
+                currentSelections.decoration = decId;
+                updateSelectedItems('decoration');
+            }
+            
+            // Download avatar
+            downloadBtn.addEventListener('click', function() {
+                // Create a canvas element
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Set canvas size to match avatar container
+                const avatarContainer = document.querySelector('.avatar-container');
+                canvas.width = avatarContainer.offsetWidth;
+                canvas.height = avatarContainer.offsetHeight;
+                
+                // Draw background
+                const bgLayer = document.getElementById('background-layer');
+                ctx.fillStyle = bgLayer.style.backgroundColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Function to draw an image layer
+                function drawLayer(layerId) {
+                    return new Promise((resolve) => {
+                        const layer = document.getElementById(layerId);
+                        const img = layer.querySelector('img');
+                        if (img && layer.style.display !== 'none') {
+                            img.onload = () => {
+                                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                resolve();
+                            };
+                            // If image is already loaded
+                            if (img.complete) {
+                                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                resolve();
+                            }
+                        } else {
+                            resolve();
+                        }
+                    });
+                }
+                
+                // Draw all layers in order
+                Promise.all([
+                    drawLayer('decoration-layer'),
+                    drawLayer('legs-layer'),
+                    drawLayer('arms-layer'),
+                    drawLayer('head-layer'),
+                    drawLayer('top-layer'),
+                    drawLayer('bottom-layer'),
+                    drawLayer('shoes-layer'),
+                    drawLayer('accessory-layer')
+                ]).then(() => {
+                    // Convert canvas to data URL
+                    const avatarData = canvas.toDataURL('image/png');
+                    
+                    // Save to Manage Account if it's open in another window
+                    if (window.opener && !window.opener.closed) {
+                        window.opener.updateAvatar(avatarData);
+                    }
+                    
+                    // Save to localStorage
+                    localStorage.setItem('tamtamAvatar', avatarData);
+                    
+                    // Create download link
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = avatarData;
+                    downloadLink.download = 'my-tamtam-avatar.png';
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    
+                    alert('Avatar saved successfully! Check your Manage Account to see it.');
+                });
+            });
+            
+            // Initialize the game
+            initGame();
+        });
+    </script>
+</body>
+</html>

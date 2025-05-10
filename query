@@ -1,0 +1,11 @@
+USE feur_admin_db;
+
+ALTER TABLE users
+ADD COLUMN contact_number VARCHAR(11) AFTER password_hash,
+ADD COLUMN birthday DATE AFTER contact_number,
+ADD COLUMN age INT AFTER birthday,
+ADD COLUMN gender VARCHAR(50) AFTER age;
+
+-- Update role_id enum to include 'outsider' and 'insider' (optional, if you prefer distinct roles)
+ALTER TABLE users
+MODIFY COLUMN role_id ENUM('admin', 'superadmin', 'user', 'outsider', 'insider') NOT NULL;

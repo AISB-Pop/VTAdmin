@@ -1,0 +1,214 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f4f8;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.link {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.link a {
+    text-decoration: none;
+    color: #4CAF50;
+}
+
+.form-container {
+    display: none;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #fff;
+}
+
+.form-container.show {
+    display: block;
+}
+
+label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    width: 100%;
+}
+
+input[type="tel"]:invalid {
+    border-color: red;
+}
+
+input[type="tel"]:valid {
+    border-color: green;
+}
+
+#reset-code-container {
+    margin-top: 10px;
+}
+
+#send-reset-code:disabled {
+    background-color: #ddd;
+    cursor: not-allowed;
+}
+
+.checkbox-container {
+    text-align: left;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.checkbox-container input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.checkbox-container label {
+    display: inline-block;
+    color: #555;
+}
+
+.checkbox-container a {
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.checkbox-container a:hover {
+    text-decoration: underline;
+}
+/* Styling for password field and eye icon */
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-container .eye-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+        /* Custom Radio Button Styles */
+        .radio-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .radio-label {
+            margin: 0 20px;
+            font-size: 16px;
+            cursor: pointer;
+            display: inline-block;
+            text-align: center;
+            padding: 10px 20px;
+            border: 2px solid #ccc;
+            border-radius: 25px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .radio-label:hover {
+            background-color: #f1f1f1;
+        }
+        .radio-input {
+            display: none;
+        }
+        .radio-input:checked + .radio-label {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        /* Form Styling */
+        .form-container input, .form-container select, .form-container button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .password-container {
+            position: relative;
+        }
+
+        .eye-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .checkbox-container {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .checkbox-container label {
+            font-size: 14px;
+        }
+        .logo {
+            display: block;
+            margin: 5px auto; /* Centers the logo horizontally with some margin */
+            max-width: 80px; /* Adjust size as needed */
+            height: auto; /* Maintain aspect ratio */
+            background: transparent;
+            padding-top: 20px;
+            padding-bottom: -20px;
+        }
